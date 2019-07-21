@@ -138,7 +138,7 @@ public class OnlineHexGrid : MonoBehaviour
         for (int i = 0; i < hexChunks.transform.childCount; i++)
         {
             GameObject terrain = hexChunks.transform.GetChild(i).gameObject.transform.Find("Terrain").gameObject;
-            if (QualitySettings.GetQualityLevel() < 2) terrain.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (QualitySettings.GetQualityLevel() < 3) terrain.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             else terrain.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
         }
     }

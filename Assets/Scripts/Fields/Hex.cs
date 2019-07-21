@@ -88,7 +88,7 @@ public struct HexCoordinates
 public class Hex : MonoBehaviour {
     
     public HexCoordinates Coordinates;
-    public Unit Unit;
+    public UnitManager Unit;
     public int HasCamp = 0; // 0 - no camp, 1 - viking camp, 2 - anglo-saxon camp 
     public bool IsUnderWater = false;
     public bool IsInEnemyZone = false;

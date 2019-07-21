@@ -100,13 +100,13 @@ void Update ()
                                     switch (hex.Unit.Unlocked)
                                     {
                                         case 1:
-                                            hex.Unit.OnRightMouseDownMovement();
+                                            hex.Unit.UnitController.OnRightMouseDownMovement();
                                             break;
                                         case 2:
-                                            hex.Unit.OnRightMouseDownFight();
+                                            hex.Unit.UnitController.OnRightMouseDownFight();
                                             break;
                                         case 3:
-                                            hex.Unit.OnRightMouseDownEnemyFight();
+                                            hex.Unit.UnitController.OnRightMouseDownEnemyFight();
                                             break;
                                         default:
                                             if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleRightClick(hex);
@@ -135,16 +135,16 @@ void Update ()
                                         switch (hex.Unit.Unlocked)
                                         {
                                             case 1:
-                                                hex.Unit.OnLeftMouseDownMovement();
+                                                hex.Unit.UnitController.OnLeftMouseDownMovement();
                                                 break;
                                             case 2:
-                                                hex.Unit.OnLeftMouseDownFight();
+                                                hex.Unit.UnitController.OnLeftMouseDownFight();
                                                 break;
                                             case 3:
-                                                hex.Unit.OnLeftMouseDownEnemyFightCheck();
+                                                hex.Unit.UnitController.OnLeftMouseDownEnemyFightCheck();
                                                 break;
                                             case 4:
-                                                hex.Unit.OnLeftMouseDownEnemyFightUncheck();
+                                                hex.Unit.UnitController.OnLeftMouseDownEnemyFightUncheck();
                                                 break;
                                             default:
                                                 if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleLeftClick(hex);
@@ -195,16 +195,16 @@ void Update ()
                                 switch (hex.Unit.Unlocked)
                                 {
                                     case 1:
-                                        hex.Unit.OnLeftMouseDownMovement();
+                                        hex.Unit.UnitController.OnLeftMouseDownMovement();
                                         break;
                                     case 2:
-                                        hex.Unit.OnLeftMouseDownFight();
+                                        hex.Unit.UnitController.OnLeftMouseDownFight();
                                         break;
                                     case 3:
-                                        hex.Unit.OnLeftMouseDownEnemyFightCheck();
+                                        hex.Unit.UnitController.OnLeftMouseDownEnemyFightCheck();
                                         break;
                                     case 4:
-                                        hex.Unit.OnLeftMouseDownEnemyFightUncheck();
+                                        hex.Unit.UnitController.OnLeftMouseDownEnemyFightUncheck();
                                         break;
                                     default:
                                         if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleLeftClick(hex);
@@ -227,16 +227,16 @@ void Update ()
                                 switch (hex.Unit.Unlocked)
                                 {
                                     case 1:
-                                        hex.Unit.OnRightMouseDownMovement();
+                                        hex.Unit.UnitController.OnRightMouseDownMovement();
                                         break;
                                     case 2:
-                                        hex.Unit.OnRightMouseDownFight();
+                                        hex.Unit.UnitController.OnRightMouseDownFight();
                                         break;
                                     case 3:
-                                        hex.Unit.OnLeftMouseDownEnemyFightCheck();
+                                        hex.Unit.UnitController.OnLeftMouseDownEnemyFightCheck();
                                         break;
                                     case 4:
-                                        hex.Unit.OnLeftMouseDownEnemyFightUncheck();
+                                        hex.Unit.UnitController.OnLeftMouseDownEnemyFightUncheck();
                                         break;
                                     default:
                                         if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleRightClick(hex);

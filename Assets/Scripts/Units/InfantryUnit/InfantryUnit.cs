@@ -33,17 +33,7 @@ public class InfantryUnit : Unit
                         if (HasEnemies()) return 2;
                         break;
                     case 3:
-                        #region Old Checking
-                        /*if (Grid.CurrentlyChecked.AttackedEnemies.Contains(this))
-                            return 4;
-                        else if ((Grid.CurrentlyChecked.AttackedEnemies.Count != 1 ||
-                                Grid.CurrentlyChecked.AttackedEnemies[0].AttackingEnemies.Count <= 1)) // ZAZNACZONY ODDZIAL NIE PARTYCYPUJE W ATAKU JEDEN NA WIELU
-                                if (AttackingEnemies.Count == 0 ||
-                                    (AttackingEnemies.Count == 1 && AttackingEnemies[0].AttackedEnemies.Count == 1 &&
-                                    Grid.CurrentlyChecked.AttackedEnemies.Count == 0))
-                                    return 3;*/
-                        #endregion
-                        if (MarkerRenderer.sprite == Markers[4])
+                       if (MarkerRenderer.sprite == Markers[4])
                             return 4;
                         else if (MarkerRenderer.sprite == Markers[1])
                             return 3;
@@ -55,16 +45,6 @@ public class InfantryUnit : Unit
                 switch (Grid.CurrentPhase)
                 {
                     case 1:
-                        #region Old Checking
-                        /*if (Grid.CurrentlyChecked.AttackedEnemies.Contains(this))
-                            return 4;
-                        else if ((Grid.CurrentlyChecked.AttackedEnemies.Count != 1 ||
-                                Grid.CurrentlyChecked.AttackedEnemies[0].AttackingEnemies.Count <= 1)) // ZAZNACZONY ODDZIAL NIE PARTYCYPUJE W ATAKU JEDEN NA WIELU
-                                if (AttackingEnemies.Count == 0 ||
-                                    (AttackingEnemies.Count == 1 && AttackingEnemies[0].AttackedEnemies.Count == 1 &&
-                                    Grid.CurrentlyChecked.AttackedEnemies.Count == 0))
-                                    return 3;*/
-                        #endregion
                         if (MarkerRenderer.sprite == Markers[4])
                             return 4;
                         else if (MarkerRenderer.sprite == Markers[1])

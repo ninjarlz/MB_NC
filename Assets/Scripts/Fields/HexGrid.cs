@@ -5,18 +5,8 @@ using System.Collections.Generic;
 
 public class HexGrid : MonoBehaviour {
 
-    [SerializeField]
-    private bool _online = false;
-    public bool Online { get { return _online; } }
-
-    [SerializeField]
-    private int _vikingCounter = 13;
-    public int VikingCounter { get { return _vikingCounter; } set { _vikingCounter = value; } }
-    [SerializeField]
-    private int _angloSaxonCounter = 12;
-    public int AngloSaxonCounter { get { return _angloSaxonCounter; } set { _angloSaxonCounter = value; } }
-
-    public HexMapCamera Camera { get; set; }
+    
+    
     public Queue<Hex> Frontier { get; private set; }
     public Dictionary<Hex, Hex> CameFrom { get; private set; }
     public Dictionary<Hex, float> CostSoFar { get; private set; }
@@ -115,7 +105,7 @@ public class HexGrid : MonoBehaviour {
         EnemyUnitsAttackedByMany = new List<Unit>();
         UnitsAttackingManyOrOne = new List<Unit>();
         UpdateHexes();
-        if (!_online) Camera = GameObject.Find("Hex Map Camera").GetComponent<HexMapCamera>();
+        
     }
     
 
@@ -141,7 +131,7 @@ public class HexGrid : MonoBehaviour {
         for (int i = 0; i < hexChunks.transform.childCount; i++)
         {
             GameObject terrain = hexChunks.transform.GetChild(i).gameObject.transform.Find("Terrain").gameObject;
-            if (QualitySettings.GetQualityLevel() < 2) terrain.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (QualitySettings.GetQualityLevel() < 3) terrain.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             else terrain.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
         }
     }

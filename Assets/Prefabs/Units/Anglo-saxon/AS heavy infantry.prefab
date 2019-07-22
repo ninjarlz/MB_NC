@@ -231,10 +231,12 @@ GameObject:
   m_Component:
   - component: {fileID: 4242964628226700}
   - component: {fileID: 136910243833008840}
-  - component: {fileID: 114658965258815270}
   - component: {fileID: 54212802342880176}
   - component: {fileID: 82830316387851954}
   - component: {fileID: 95769242477193394}
+  - component: {fileID: 114645406798185158}
+  - component: {fileID: 114154055913223146}
+  - component: {fileID: 114681248820845040}
   m_Layer: 0
   m_Name: AS heavy infantry
   m_TagString: Untagged
@@ -1470,7 +1472,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1127339887368064}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 2.99, z: 0}
   m_LocalScale: {x: 7, y: 7, z: 7}
   m_Children:
   - {fileID: 224580523310539034}
@@ -3280,7 +3282,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 100
---- !u!114 &114658965258815270
+--- !u!114 &114154055913223146
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3288,10 +3290,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 1127339887368064}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a4df03e7fff1524b99ba6840ea50d4b, type: 3}
+  m_Script: {fileID: 11500000, guid: d113597413b3d284680af47c9f9f808b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _name: 1. H. Inf.
+--- !u!114 &114645406798185158
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1127339887368064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe18ba4f9c016842a9506aa8f4a80ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _name: ' 1. H. Inf.'
   _moveSpeed: 30
   _rotationSpeed: 80
   _currentState: 3
@@ -3303,21 +3316,27 @@ MonoBehaviour:
   - {fileID: 21300000, guid: ba7fb33a8ef8aea4ab2bbbda3631eb39, type: 3}
   - {fileID: 21300000, guid: 6dcce8ebdea3a8942822ef77d2c2a32f, type: 3}
   - {fileID: 21300000, guid: 9a006cbb99859d84183c757be10e8d4c, type: 3}
-  _side: 0
+  _side: 1
   _power: 2
   _tPower: 1
-  _condition: 1
-  _isBlockedByEnemyControlZone: 0
+  _currentCondition: 0
   _canvasUI: {fileID: 0}
-  _shieldsIcons:
-  - {fileID: 1659353401854146}
-  - {fileID: 1531125050530618}
-  - {fileID: 1050742054106912}
   _mobility: 5
   _maxMobility: 5
   _isChecked: 0
   _currentHex: {fileID: 0}
-  _turnIcon: {fileID: 1756109997187770}
+--- !u!114 &114681248820845040
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1127339887368064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4658029114e9684ea4d3628f1b8394b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isBlockedByEnemyControlZone: 0
 --- !u!114 &114948867056269186
 MonoBehaviour:
   m_ObjectHideFlags: 1

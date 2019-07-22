@@ -22,7 +22,7 @@ public class InfantryUnitController : UnitController {
             if (_unitManager.CurrentState == UnitManager.State.Idle)
             {
                 _unitManager.IsChecked = false;
-                _grid.CurrentlyChecked = null;
+                GameManager.CurrentlyChecked = null;
                 _unitManager.CurrentHex.TurnOffArrowsRenderers();
                 _grid.HideApproachables();
                 if (_grid.ShowRotationFields)
@@ -37,9 +37,9 @@ public class InfantryUnitController : UnitController {
         }
         else
         {
-            if (_grid.CurrentlyChecked)
+            if (GameManager.CurrentlyChecked)
             {
-                if (_grid.CurrentlyChecked.CurrentState == UnitManager.State.Idle)
+                if (GameManager.CurrentlyChecked.CurrentState == UnitManager.State.Idle)
                 {
                     if (_grid.ShowRotationFields)
                     {
@@ -50,23 +50,23 @@ public class InfantryUnitController : UnitController {
                                     if (!neighbor.Unit) neighbor.TurnOffAllRenderers();
                                     else neighbor.Unit.MarkerRenderer.sprite = null;
                                 }
-                            _grid.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
-                            _grid.CurrentlyChecked.Animator.SetBool("Walking", true);
-                            _grid.CurrentlyChecked.Rotate(_unitManager.CurrentHex);
-                            if (_grid.CurrentlyChecked.Mobility == 0) _grid.CurrentlyChecked.ShowTurnIcon = false;
-                            else _grid.CurrentlyChecked.Mobility--;
+                            GameManager.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
+                            GameManager.CurrentlyChecked.Animator.SetBool("Walking", true);
+                            GameManager.CurrentlyChecked.UnitMovement.Rotate(_unitManager.CurrentHex);
+                            if (GameManager.CurrentlyChecked.Mobility == 0) GameManager.CurrentlyChecked.ShowTurnIcon = false;
+                            else GameManager.CurrentlyChecked.Mobility--;
                             _click.Play();
                         }
                         else
                         {
                             _grid.ShowRotationFields = false;
-                            foreach (Hex neighbor in _grid.CurrentlyChecked.CurrentHex.GetNeighbors())
+                            foreach (Hex neighbor in GameManager.CurrentlyChecked.CurrentHex.GetNeighbors())
                                 if (neighbor && neighbor.Unit) neighbor.Unit.MarkerRenderer.sprite = null;
-                            _grid.CurrentlyChecked.IsChecked = false;
-                            _grid.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
+                            GameManager.CurrentlyChecked.IsChecked = false;
+                            GameManager.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
                             _grid.HideApproachables();
                             _unitManager.IsChecked = true;
-                            _grid.CurrentlyChecked = this;
+                            GameManager.CurrentlyChecked = _unitManager;
                             _unitManager.SetUnitBarText();
                             _infantryUnitMovement.FindApproachableHexes();
                             _click.Play();
@@ -74,22 +74,22 @@ public class InfantryUnitController : UnitController {
                     }
                     else
                     {
-                        _grid.CurrentlyChecked.IsChecked = false;
-                        _grid.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
+                        GameManager.CurrentlyChecked.IsChecked = false;
+                        GameManager.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
                         _grid.HideApproachables();
                         _unitManager.IsChecked = true;
-                        _grid.CurrentlyChecked = this;
+                        GameManager.CurrentlyChecked = _unitManager;
                         _unitManager.SetUnitBarText();
                         _infantryUnitMovement.FindApproachableHexes();
                         _click.Play();
                     }
                 }
-                else _grid.CurrentlyChecked.RewindMovement();
+                else GameManager.CurrentlyChecked.UnitMovement.RewindMovement();
             }
             else
             {
                 _unitManager.IsChecked = true;
-                _grid.CurrentlyChecked = this;
+                GameManager.CurrentlyChecked = _unitManager;
                 _unitManager.SetUnitBarText();
                 _infantryUnitMovement.FindApproachableHexes();
                 _click.Play();
@@ -106,8 +106,8 @@ public class InfantryUnitController : UnitController {
             if (_unitManager.CurrentState == UnitManager.State.Idle)
             {
                 _unitManager.IsChecked = false;
-                _grid.CurrentlyChecked = null;
-                foreach (Unit enemy in _unitManager.AvailableEnemies)
+                GameManager.CurrentlyChecked = null;
+                foreach (UnitManager enemy in _unitManager.AvailableEnemies)
                 {
                     if (enemy.AttackingEnemies.Count > 0) enemy.MarkerRenderer.sprite = null;
                     else enemy.MarkerRenderer.sprite = enemy.Markers[5];
@@ -118,24 +118,24 @@ public class InfantryUnitController : UnitController {
         }
         else
         {
-            if (_grid.CurrentlyChecked)
+            if (GameManager.CurrentlyChecked)
             {
-                if (_grid.CurrentlyChecked.CurrentState == UnitManager.State.Idle)
+                if (GameManager.CurrentlyChecked.CurrentState == UnitManager.State.Idle)
                 {
-                    _grid.CurrentlyChecked.IsChecked = false;
-                    foreach (Unit enemy in _grid.CurrentlyChecked.AvailableEnemies)
+                    GameManager.CurrentlyChecked.IsChecked = false;
+                    foreach (UnitManager enemy in GameManager.CurrentlyChecked.AvailableEnemies)
                     {
                         if (enemy.AttackingEnemies.Count > 0) enemy.MarkerRenderer.sprite = null;
                         else enemy.MarkerRenderer.sprite = enemy.Markers[5];
                     }
                     _unitManager.IsChecked = true;
-                    _grid.CurrentlyChecked = this;
+                    GameManager.CurrentlyChecked = _unitManager;
                     _unitManager.SetUnitBarText();
                     if (_unitManager.AttackedEnemies.Count == 1 && _unitManager.AttackedEnemies[0].AttackingEnemies.Count > 1) // JESLI PARTYCYPUJESZ W ATAKU KILKU NA JEDNEGO
                         _unitManager.AttackedEnemies[0].MarkerRenderer.sprite = _unitManager.Markers[4];
                     else
                     {
-                        foreach (Unit enemy in _unitManager.AvailableEnemies)
+                        foreach (UnitManager enemy in _unitManager.AvailableEnemies)
                         {
                             if (_unitManager.AttackedEnemies.Contains(enemy)) enemy.MarkerRenderer.sprite = _unitManager.Markers[4];
                             else if (enemy.AttackingEnemies.Count == 0 ||
@@ -151,13 +151,13 @@ public class InfantryUnitController : UnitController {
             else
             {
                 _unitManager.IsChecked = true;
-                _grid.CurrentlyChecked = this;
+                GameManager.CurrentlyChecked = _unitManager;
                 _unitManager.SetUnitBarText();
                 if (_unitManager.AttackedEnemies.Count == 1 && _unitManager.AttackedEnemies[0].AttackingEnemies.Count > 1)
                     _unitManager.AttackedEnemies[0].MarkerRenderer.sprite = _unitManager.Markers[4];
                 else
                 {
-                    foreach (Unit enemy in _unitManager.AvailableEnemies)
+                    foreach (UnitManager enemy in _unitManager.AvailableEnemies)
                     {
                         if (_unitManager.AttackedEnemies.Contains(enemy)) enemy.MarkerRenderer.sprite = _unitManager.Markers[4];
                         else if (enemy.AttackingEnemies.Count == 0 ||
@@ -178,25 +178,25 @@ public class InfantryUnitController : UnitController {
 
     public override void OnLeftMouseDownEnemyFightUncheck()
     {
-        _unitManager.AttackingEnemies.Remove(_grid.CurrentlyChecked);
+        _unitManager.AttackingEnemies.Remove(GameManager.CurrentlyChecked);
         _unitManager.MarkerRenderer.sprite = _unitManager.Markers[1];
-        _grid.CurrentlyChecked.AttackedEnemies.Remove(_unitManager);
+        GameManager.CurrentlyChecked.AttackedEnemies.Remove(_unitManager);
         if (_unitManager.AttackingEnemies.Count > 0)
         {
-            foreach (Unit enemy in _grid.CurrentlyChecked.AvailableEnemies)
+            foreach (UnitManager enemy in GameManager.CurrentlyChecked.AvailableEnemies)
                 enemy.MarkerRenderer.sprite = _unitManager.Markers[1];
         }
         else
         {
-            if (_grid.CurrentlyChecked.AttackedEnemies.Count > 0)
+            if (GameManager.CurrentlyChecked.AttackedEnemies.Count > 0)
             {
                 _unitManager.MarkerRenderer.sprite = _unitManager.Markers[1];
-                foreach (Unit enemy in _grid.CurrentlyChecked.AvailableEnemies)
+                foreach (UnitManager enemy in GameManager.CurrentlyChecked.AvailableEnemies)
                     if (enemy.AttackingEnemies.Count > 0 &&
-                        !enemy.AttackingEnemies.Contains(_grid.CurrentlyChecked))
+                        !enemy.AttackingEnemies.Contains(GameManager.CurrentlyChecked))
                         enemy.MarkerRenderer.sprite = null;
             }
-            else foreach (Unit enemy in _grid.CurrentlyChecked.AvailableEnemies)
+            else foreach (UnitManager enemy in GameManager.CurrentlyChecked.AvailableEnemies)
                     enemy.MarkerRenderer.sprite = _unitManager.Markers[1];
         }
         _click.Play();
@@ -204,17 +204,17 @@ public class InfantryUnitController : UnitController {
 
     public override void OnLeftMouseDownEnemyFightCheck()
     {
-        _unitManager.AttackingEnemies.Add(_grid.CurrentlyChecked);
-        _grid.CurrentlyChecked.AttackedEnemies.Add(_unitManager);
+        _unitManager.AttackingEnemies.Add(GameManager.CurrentlyChecked);
+        GameManager.CurrentlyChecked.AttackedEnemies.Add(_unitManager);
         if (_unitManager.AttackingEnemies.Count > 1)
-            foreach (Unit enemy in _grid.CurrentlyChecked.AvailableEnemies)
+            foreach (UnitManager enemy in GameManager.CurrentlyChecked.AvailableEnemies)
             {
                 if (enemy.AttackingEnemies.Count > 0) enemy.MarkerRenderer.sprite = null;
                 else enemy.MarkerRenderer.sprite = enemy.Markers[5];
             }
-        else foreach (Unit enemy in _grid.CurrentlyChecked.AvailableEnemies)
+        else foreach (UnitManager enemy in GameManager.CurrentlyChecked.AvailableEnemies)
                 if (enemy.AttackingEnemies.Count > 0 &&
-                    !enemy.AttackingEnemies.Contains(_grid.CurrentlyChecked))
+                    !enemy.AttackingEnemies.Contains(GameManager.CurrentlyChecked))
                     enemy.MarkerRenderer.sprite = null;
         _unitManager.MarkerRenderer.sprite = _unitManager.Markers[4];
         _click.Play();
@@ -269,7 +269,7 @@ public class InfantryUnitController : UnitController {
                 else _infantryUnitMovement.FindPath(hex);
             }
         }
-        else if (_unitManager.CurrentState == UnitManager.State.Moving || _unitManager..CurrentState == UnitManager.State.Rotating) _unitManager.RewindMovement();
+        else if (_unitManager.CurrentState == UnitManager.State.Moving || _unitManager.CurrentState == UnitManager.State.Rotating) _unitManager.UnitMovement.RewindMovement();
     }
     #endregion
 }

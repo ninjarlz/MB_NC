@@ -41,7 +41,7 @@ public class FightMechanics : MonoBehaviour
     public static string[] AttackingRatios = { "1", "1", "1", "1", "2", "3", "4", "5", "6", "7", "8", "9+" };
     public static string[] DefendingRatios = { "4+", "3", "2", "1", "1", "1", "1", "1", "1", "1", "1", "1" };
 
-    public void HandleVisualAspectOfFight(bool IsCenteredOnEnemy, Unit processedUnit)
+    public void HandleVisualAspectOfFight(bool IsCenteredOnEnemy, UnitManager processedUnit)
     {
         processedUnit.SetUnitInfoText();
         if (!IsCenteredOnEnemy)
@@ -49,7 +49,7 @@ public class FightMechanics : MonoBehaviour
             processedUnit.Animator.Play("Attack" + Random.Range(1, 3).ToString());
             if (processedUnit.ShouldDie) StartCoroutine(AttackingDie(processedUnit));
 
-            foreach (Unit enemy in processedUnit.AttackedEnemies)
+            foreach (UnitManager enemy in processedUnit.AttackedEnemies)
             {
                 StartCoroutine(TakeDamageAnimationDelay(enemy));
                 enemy.SetUnitInfoText();
@@ -57,7 +57,7 @@ public class FightMechanics : MonoBehaviour
         }
         else
         {
-            foreach (Unit unit in processedUnit.AttackingEnemies)
+            foreach (UnitManager unit in processedUnit.AttackingEnemies)
             {
                 unit.Animator.Play("Attack" + Random.Range(1, 3).ToString());
                 if (unit.ShouldDie) StartCoroutine(AttackingDie(unit));
@@ -69,19 +69,19 @@ public class FightMechanics : MonoBehaviour
     }
 
 
-    public void ResolveFightCenteredOnEnemy(Unit processedUnit)
+    public void ResolveFightCenteredOnEnemy(UnitManager processedUnit)
     {
         int attackingPower = 0, defendingPower = 0;
         int attackingArmor, defendingArmor, terrainDiff = processedUnit.CurrentHex.DefenseModificator;
         bool heightDiff = false;
         defendingArmor = processedUnit.Armor;
-        AttackFromBackCheck(processedUnit.AttackingEnemies, new List<Unit> { processedUnit });
+        AttackFromBackCheck(processedUnit.AttackingEnemies, new List<UnitManager> { processedUnit });
         if (!processedUnit.AttackedFromBack) defendingPower = processedUnit.Power;
         else { defendingPower = processedUnit.TPower; Debug.Log("attacked from behind"); }
         processedUnit.MarkerRenderer.sprite = processedUnit.Markers[1];
 
         List<int> ArmorValues = new List<int> { 0, 0, 0 };
-        foreach (Unit unit in processedUnit.AttackingEnemies)
+        foreach (UnitManager unit in processedUnit.AttackingEnemies)
         {
             if (!heightDiff)
             {
@@ -119,8 +119,8 @@ public class FightMechanics : MonoBehaviour
         if (results[0] != null)
         {
             processedUnit.AttackingEnemies.Sort((y, x) => x.Power.CompareTo(y.Power));
-            List<Unit> AttackingEnemiesCopy = new List<Unit>();
-            foreach (Unit enemy in processedUnit.AttackingEnemies) AttackingEnemiesCopy.Add(enemy);
+            List<UnitManager> AttackingEnemiesCopy = new List<UnitManager>();
+            foreach (UnitManager enemy in processedUnit.AttackingEnemies) AttackingEnemiesCopy.Add(enemy);
             while (results[0].Damage > 0)
             {
                 for (int i = 0; i < AttackingEnemiesCopy.Count; i++)
@@ -157,7 +157,7 @@ public class FightMechanics : MonoBehaviour
         }
     }
 
-    public void ResolveFightCenteredOnUnit(Unit processedUnit)
+    public void ResolveFightCenteredOnUnit(UnitManager processedUnit)
     {
         int attackingPower = 0, defendingPower = 0;
         int attackingArmor, defendingArmor;
@@ -166,8 +166,8 @@ public class FightMechanics : MonoBehaviour
         processedUnit.MarkerRenderer.sprite = processedUnit.Markers[4];
         List<int> ArmorValues = new List<int> { 0, 0, 0 };
         int maxDefenseModificator = 0;
-        AttackFromBackCheck(new List<Unit> { processedUnit }, processedUnit.AttackedEnemies);
-        foreach (Unit enemy in processedUnit.AttackedEnemies)
+        AttackFromBackCheck(new List<UnitManager> { processedUnit }, processedUnit.AttackedEnemies);
+        foreach (UnitManager enemy in processedUnit.AttackedEnemies)
         {
             int currDefenseModificator = enemy.CurrentHex.DefenseModificator;
             if (enemy.transform.position.y - processedUnit.transform.position.y > 2f)
@@ -220,8 +220,8 @@ public class FightMechanics : MonoBehaviour
         if (results[1] != null)
         {
             processedUnit.AttackedEnemies.Sort((y, x) => x.Power.CompareTo(y.Power));
-            List<Unit> AttackedEnemiesCopy = new List<Unit>();
-            foreach (Unit enemy in processedUnit.AttackedEnemies) AttackedEnemiesCopy.Add(enemy);
+            List<UnitManager> AttackedEnemiesCopy = new List<UnitManager>();
+            foreach (UnitManager enemy in processedUnit.AttackedEnemies) AttackedEnemiesCopy.Add(enemy);
             while (results[1].Damage > 0)
             {
                 for (int i = 0; i < AttackedEnemiesCopy.Count; i++)
@@ -243,12 +243,12 @@ public class FightMechanics : MonoBehaviour
     }
 
 
-    public void AttackFromBackCheck(List<Unit> attacking, List<Unit> defending)
+    public void AttackFromBackCheck(List<UnitManager> attacking, List<UnitManager> defending)
     {
-        foreach (Unit enemy in defending)
+        foreach (UnitManager enemy in defending)
         {
             HexDirection oppositeRotation = enemy.CurrentRotation.Opposite();
-            foreach (Unit unit in attacking)
+            foreach (UnitManager unit in attacking)
             {
                 if (unit.CurrentHex == enemy.CurrentHex.GetNeighbor(oppositeRotation.Previous()) ||
                     unit.CurrentHex == enemy.CurrentHex.GetNeighbor(oppositeRotation) ||
@@ -261,14 +261,14 @@ public class FightMechanics : MonoBehaviour
         }
     }
 
-    public IEnumerator TakeDamageAnimationDelay(Unit unit)
+    public IEnumerator TakeDamageAnimationDelay(UnitManager unit)
     {
         yield return new WaitForSeconds(0.3f);
         unit.Animator.Play("Take_damage");
         if (unit.ShouldDie)
         {
-            if (unit.Side) Grid.VikingCounter--;
-            else Grid.AngloSaxonCounter--;
+            if (unit.Side == GameManager.Side.Northman) GameManager.VikingCounter--;
+            else GameManager.AngloSaxonCounter--;
             unit.Animator.SetBool("Death" + Random.Range(1, 3).ToString(), true);
             yield return new WaitForSeconds(1.6f);
             unit.transform.GetChild(2).gameObject.SetActive(false);
@@ -278,10 +278,10 @@ public class FightMechanics : MonoBehaviour
         }
     }
 
-    public IEnumerator AttackingDie(Unit unit)
+    public IEnumerator AttackingDie(UnitManager unit)
     {
-        if (unit.Side) Grid.VikingCounter--;
-        else Grid.AngloSaxonCounter--;
+        if (unit.Side == GameManager.Side.Northman) GameManager.VikingCounter--;
+        else GameManager.AngloSaxonCounter--;
         yield return new WaitForSeconds(0.5f);
         unit.Animator.Play("Death" + Random.Range(1, 3).ToString());
         yield return new WaitForSeconds(1.4f);

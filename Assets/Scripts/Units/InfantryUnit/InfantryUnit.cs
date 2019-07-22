@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 public class InfantryUnit : Unit
-{
+{/*
     #region Variables & Properties
     [SerializeField]
    protected GameObject _turnIcon;
@@ -361,5 +361,5 @@ public class InfantryUnit : Unit
         }
         
     }
-    #endregion
+    #endregion*/
 }

@@ -5,8 +5,6 @@ using System.Collections.Generic;
 
 public class HexGrid : MonoBehaviour {
 
-    
-    
     public Queue<Hex> Frontier { get; private set; }
     public Dictionary<Hex, Hex> CameFrom { get; private set; }
     public Dictionary<Hex, float> CostSoFar { get; private set; }
@@ -21,8 +19,6 @@ public class HexGrid : MonoBehaviour {
     [SerializeField]
     private int _hexCountZ;
     public int HexCountZ { get { return _hexCountZ; } }
-
-    public Unit CurrentlyChecked { get; set; }
     private bool _showPath = false;
     public bool ShowPath { get { return _showPath; } set { _showPath = value; } }
     private bool _showRotationFields = false;
@@ -30,30 +26,11 @@ public class HexGrid : MonoBehaviour {
     [SerializeField]
     private string _mapName;
 
-    public List<Unit> Units { get; private set; }
-    public List<InfantryUnit> InfantryUnits { get; private set; }
-    public List<Unit> UnitsFirstSide { get; private set; }
-    public List<Unit> UnitsSecondSide { get; private set; }
-    public GameObject[] Trees = new GameObject[3];
-
-    private int _currentPhase = 0;
-    public int CurrentPhase { get { return _currentPhase; } set { _currentPhase = value; } }
-    private int _currentTurn = 1;
-    public int CurrentTurn { get { return _currentTurn; } set { _currentTurn = value; } }
-
-    public TextMeshProUGUI CurrentPhaseText { get; set; }
-    public TextMeshProUGUI CurrentTurnText { get; set; }
-
     public Hex[,] Hexes { get; set; }
     [SerializeField]
     private TextMeshPro _costLabel;
     public TextMeshPro CostLabel { get { return _costLabel; } set { _costLabel = value; } } 
     private MeshCollider _collider;
-
-    public List<Unit> EnemiesInControlZone { get; set; }
-    public List<Unit> UnitsWithEnemies { get; set; }
-    public List<Unit> EnemyUnitsAttackedByMany { get; set; }
-    public List<Unit> UnitsAttackingManyOrOne { get; set; }
 
     [SerializeField]
     private Sprite[] _dicesSprites;
@@ -82,12 +59,6 @@ public class HexGrid : MonoBehaviour {
     public Hex AngloSaxonsCamp { get { return _angloSaxonsCamp; } set { _angloSaxonsCamp = value; } }
     
 
-    public static string[] Phases =
-    {
-        "Phase:  Movement Phase 1   1/4", "Phase:  Attack Phase 1   2/4",
-        "Phase:  Movement Phase 2   3/4", "Phase:  Attack Phase 2   4/4"
-    };
-
     void Awake()
     {
         Frontier = new Queue<Hex>();
@@ -96,22 +67,13 @@ public class HexGrid : MonoBehaviour {
         FromDirection = new Dictionary<Hex, int>();
         ApproachableHexes = new List<Hex>();
         Path = new List<Hex>();
-        Units = new List<Unit>();
-        InfantryUnits = new List<InfantryUnit>();
-        UnitsFirstSide = new List<Unit>();
-        UnitsSecondSide = new List<Unit>();
-        UnitsWithEnemies = new List<Unit>();
-        EnemiesInControlZone = new List<Unit>();
-        EnemyUnitsAttackedByMany = new List<Unit>();
-        UnitsAttackingManyOrOne = new List<Unit>();
         UpdateHexes();
-        
     }
     
 
     void UpdateHexes()
     {
-       GameObject hexes = GameObject.Find("Hexes");
+        GameObject hexes = GameObject.Find("Hexes");
         Hexes = new Hex[HexCountX, HexCountZ];
         for (int x = 0, i = 0; x < HexCountX; x++) for (int z = 0; z < HexCountZ; z++, i++)
             {
@@ -137,15 +99,11 @@ public class HexGrid : MonoBehaviour {
     }
 
 
-
     // Use this for initialization
     void Start()
     {
         for (int x = 0; x < HexCountX; x++) for (int z = 0; z < HexCountZ; z++) Hexes[x, z].CalculateNeighbors(Hexes, HexCountX, HexCountZ);
-        CurrentPhaseText = GameObject.Find("Current Phase Text").GetComponent<TextMeshProUGUI>();
-        CurrentTurnText = GameObject.Find("Current Turn Text").GetComponent<TextMeshProUGUI>();
-        CurrentPhaseText.text = Phases[0];
-        CurrentTurnText.text = "Turn:  1/30";
+        
     }
 
     public Hex GetHex(Vector3 hitPoint)

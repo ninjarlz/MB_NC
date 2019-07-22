@@ -57,7 +57,7 @@ public class IngameUI : UIModule {
             _winDescription.text = "Player " + (player ? "1" : "2") + " has won\nby capturing enemy camp.";
         }
         WinStatementActive = true;
-        _grid.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingWin;
+        GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingWin;
     }
 
     public override void Awake()
@@ -69,30 +69,30 @@ public class IngameUI : UIModule {
     public void OnNextPhaseButton()
     {
         _source.Play();
-        Unit tempCurrentlyChecked;
+        UnitManager tempCurrentlyChecked;
         if (!InGameUIActive && !WinStatementActive)
         {
-            switch (_grid.CurrentPhase)
+            switch (GameManager.CurrentPhase)
             {
                 case 0:
 
-                    if (_grid.CurrentlyChecked)
+                    if (GameManager.CurrentlyChecked)
                     {
-                        _grid.CurrentlyChecked.IsChecked = false;
-                        _grid.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
+                        GameManager.CurrentlyChecked.IsChecked = false;
+                        GameManager.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
                         _grid.HideApproachables();
-                        if (_grid.CurrentlyChecked.CurrentState != Unit.State.Idle) _grid.CurrentlyChecked.RewindMovement();
-                        _grid.CurrentlyChecked = null;
+                        if (GameManager.CurrentlyChecked.CurrentState != UnitManager.State.Idle) GameManager.CurrentlyChecked.UnitMovement.RewindMovement();
+                        GameManager.CurrentlyChecked = null;
                         
                     }
 
-                    if (_grid.AngloSaxonsCamp.Unit && _grid.AngloSaxonsCamp.Unit.Side == true)
+                    if (_grid.AngloSaxonsCamp.Unit && _grid.AngloSaxonsCamp.Unit.Side == GameManager.Side.Northman)
                     {
                         ShowWin(true, true);
                         return;
                     }
 
-                    foreach (Unit unit in _grid.UnitsFirstSide)
+                    foreach (UnitManager unit in GameManager.UnitsFirstSide)
                     {
                         if (unit.CurrentHex)
                         {
@@ -107,10 +107,10 @@ public class IngameUI : UIModule {
                                         if (!unit.HasEnemies())
                                         {
                                             unit.MarkerRenderer.sprite = unit.Markers[3];
-                                            _grid.UnitsWithEnemies.Add(unit);
+                                            GameManager.UnitsWithEnemies.Add(unit);
                                         }
-                                        if (!_grid.EnemiesInControlZone.Contains(neighbor.Unit))
-                                            _grid.EnemiesInControlZone.Add(neighbor.Unit);
+                                        if (!GameManager.EnemiesInControlZone.Contains(neighbor.Unit))
+                                            GameManager.EnemiesInControlZone.Add(neighbor.Unit);
                                         unit.AvailableEnemies.Add(neighbor.Unit);
                                         if (neighbor.Unit.MarkerRenderer.sprite == null)
                                             neighbor.Unit.MarkerRenderer.sprite = neighbor.Unit.Markers[5];
@@ -120,84 +120,84 @@ public class IngameUI : UIModule {
                         }
                     }
                     
-                    _grid.CurrentPhase = 1;
-                    _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
+                    GameManager.CurrentPhase = 1;
+                    GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
                     
                     break;
 
                 case 1:
 
-                    tempCurrentlyChecked = _grid.CurrentlyChecked;
-                    if (_grid.CurrentlyChecked)
+                    tempCurrentlyChecked = GameManager.CurrentlyChecked;
+                    if (GameManager.CurrentlyChecked)
                     {
-                        _grid.CurrentlyChecked.IsChecked = false;
-                        _grid.CurrentlyChecked = null;
+                        GameManager.CurrentlyChecked.IsChecked = false;
+                        GameManager.CurrentlyChecked = null;
                     }
-                    if (_grid.UnitsWithEnemies.Count != 0)
+                    if (GameManager.UnitsWithEnemies.Count != 0)
                     {
-                        foreach (Unit unit in _grid.UnitsWithEnemies)
+                        foreach (UnitManager unit in GameManager.UnitsWithEnemies)
                         {
                             if (unit.AttackedEnemies.Count == 0)
                             {
-                                _grid.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
+                                GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
                                 TurnButton.enabled = false;
                                 return;
                             }
                         }
-                        foreach (Unit enemy in _grid.EnemiesInControlZone)
+                        foreach (UnitManager enemy in GameManager.EnemiesInControlZone)
                         {
                             if (enemy.AttackingEnemies.Count == 0)
                             {
-                                _grid.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;//ShowingUnitsObligedToFight = true;
+                                GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;//ShowingUnitsObligedToFight = true;
                                 TurnButton.enabled = false;
                                 return;
                             }
                         }
 
-                        foreach (Unit unit in _grid.UnitsWithEnemies)
+                        foreach (UnitManager unit in GameManager.UnitsWithEnemies)
                         {
                             unit.MarkerRenderer.sprite = null;
-                            if (tempCurrentlyChecked) foreach (Unit enemy in tempCurrentlyChecked.AttackedEnemies)
+                            if (tempCurrentlyChecked) foreach (UnitManager enemy in tempCurrentlyChecked.AttackedEnemies)
                                     enemy.MarkerRenderer.sprite = null;
                             if (unit.AttackedEnemies.Count == 1 && unit.AttackedEnemies[0].AttackingEnemies.Count > 1) // JESLI PARTYCYPUJE W ATAKU KILKU NA JEDNEGO
                             {
-                                if (!_grid.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
-                                    _grid.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
+                                if (!GameManager.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
+                                    GameManager.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
                             }
                             else
-                                _grid.UnitsAttackingManyOrOne.Add(unit);
+                                GameManager.UnitsAttackingManyOrOne.Add(unit);
                         }
-                        _grid.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingFights;
+                        GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingFights;
                         TurnButton.enabled = false;
                     }
                     else
                     {
-                        foreach (InfantryUnit unit in _grid.InfantryUnits)
+                        foreach (InfantryUnitManager unit in GameManager.InfantryUnits)
                             if (!unit.ShowTurnIcon) unit.ShowTurnIcon = true;
-                        _grid.CurrentPhase = 2;
-                        _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
+                        GameManager.CurrentPhase = 2;
+                        GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
                     }
 
                     break;
 
                case 2:
 
-                    if (_grid.CurrentlyChecked)
+                    if (GameManager.CurrentlyChecked)
                     {
-                        _grid.CurrentlyChecked.IsChecked = false;
-                        _grid.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
+                        GameManager.CurrentlyChecked.IsChecked = false;
+                        GameManager.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
                         _grid.HideApproachables();
-                        if (_grid.CurrentlyChecked.CurrentState != Unit.State.Idle) _grid.CurrentlyChecked.RewindMovement();
-                        _grid.CurrentlyChecked = null;
+                        if (GameManager.CurrentlyChecked.CurrentState != UnitManager.State.Idle) GameManager.CurrentlyChecked.UnitMovement.RewindMovement();
+                        GameManager.CurrentlyChecked = null;
                     }
 
-                    if (_grid.VikingsCamp.Unit && _grid.VikingsCamp.Unit.Side == false)
+                    if (_grid.VikingsCamp.Unit && _grid.VikingsCamp.Unit.Side == GameManager.Side.Anglosaxons)
                     {
                         ShowWin(true, false);
                         return;
                     }
 
-                    foreach (Unit unit in _grid.UnitsSecondSide)
+                    foreach (UnitManager unit in GameManager.UnitsSecondSide)
                     {
                         if (unit.CurrentHex)
                         {
@@ -212,10 +212,10 @@ public class IngameUI : UIModule {
                                         if (!unit.HasEnemies())
                                         {
                                             unit.MarkerRenderer.sprite = unit.Markers[3];
-                                            _grid.UnitsWithEnemies.Add(unit);
+                                            GameManager.UnitsWithEnemies.Add(unit);
                                         }
-                                        if (!_grid.EnemiesInControlZone.Contains(neighbor.Unit))
-                                            _grid.EnemiesInControlZone.Add(neighbor.Unit);
+                                        if (!GameManager.EnemiesInControlZone.Contains(neighbor.Unit))
+                                            GameManager.EnemiesInControlZone.Add(neighbor.Unit);
                                         unit.AvailableEnemies.Add(neighbor.Unit);
                                         if (neighbor.Unit.MarkerRenderer.sprite == null)
                                             neighbor.Unit.MarkerRenderer.sprite = neighbor.Unit.Markers[5];
@@ -225,311 +225,81 @@ public class IngameUI : UIModule {
                         }
                     }
                     
-                    _grid.CurrentPhase = 3;
-                    _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
+                    GameManager.CurrentPhase = 3;
+                    GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
 
                     break;
 
                 case 3:
 
-                    tempCurrentlyChecked = _grid.CurrentlyChecked;
-                    if (_grid.CurrentlyChecked)
-                        if (_grid.CurrentlyChecked)
+                    tempCurrentlyChecked = GameManager.CurrentlyChecked;
+                    if (GameManager.CurrentlyChecked)
+                        if (GameManager.CurrentlyChecked)
                         {
-                            _grid.CurrentlyChecked.IsChecked = false;
-                            _grid.CurrentlyChecked = null;
+                            GameManager.CurrentlyChecked.IsChecked = false;
+                            GameManager.CurrentlyChecked = null;
                         }
-                    if (_grid.UnitsWithEnemies.Count != 0)
+                    if (GameManager.UnitsWithEnemies.Count != 0)
                     {
-                        foreach (Unit unit in _grid.UnitsWithEnemies)
+                        foreach (UnitManager unit in GameManager.UnitsWithEnemies)
                         {
                             if (unit.AttackedEnemies.Count == 0)
                             {
-                                _grid.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
+                                GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
                                 TurnButton.enabled = false;
                                 return;
                             }
                         }
-                        foreach (Unit enemy in _grid.EnemiesInControlZone)
+                        foreach (UnitManager enemy in GameManager.EnemiesInControlZone)
                         {
                             if (enemy.AttackingEnemies.Count == 0)
                             {
-                                _grid.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
+                                GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
                                 TurnButton.enabled = false;
                                 return;
                             }
                         }
 
-                        foreach (Unit unit in _grid.UnitsWithEnemies)
+                        foreach (UnitManager unit in GameManager.UnitsWithEnemies)
                         {
                             unit.MarkerRenderer.sprite = null;
-                            if (tempCurrentlyChecked) foreach (Unit enemy in tempCurrentlyChecked.AttackedEnemies)
+                            if (tempCurrentlyChecked) foreach (UnitManager enemy in tempCurrentlyChecked.AttackedEnemies)
                                     enemy.MarkerRenderer.sprite = null;
                             if (unit.AttackedEnemies.Count == 1 && unit.AttackedEnemies[0].AttackingEnemies.Count > 1) // JESLI PARTYCYPUJE W ATAKU KILKU NA JEDNEGO
                             {
-                                if (!_grid.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
-                                    _grid.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
+                                if (!GameManager.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
+                                    GameManager.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
                             }
                             else
-                                _grid.UnitsAttackingManyOrOne.Add(unit);
+                                GameManager.UnitsAttackingManyOrOne.Add(unit);
                         }
-                        _grid.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingFights;
+                        GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingFights;
                         TurnButton.enabled = false;
                     }
                     else
                     {
-                        if (_grid.CurrentTurn == 30)
+                        if (GameManager.CurrentTurn == 30)
                         {
                             ShowWin(false, false);
                             return;
                         }
-                        _grid.CurrentTurnText.text = "Turn:  " + (++_grid.CurrentTurn).ToString() + "/30";
-                        foreach (Unit unit in _grid.Units)
+                        GameManager.CurrentTurnText.text = "Turn:  " + (++GameManager.CurrentTurn).ToString() + "/30";
+                        foreach (UnitManager unit in GameManager.Units)
                         {
                             unit.Mobility = unit.MaxMobility;
                             unit.SetUnitInfoText();
                             unit.SetUnitBarText();
                             unit.AvailableEnemies.Clear();
                         }
-                        foreach (InfantryUnit unit in _grid.InfantryUnits)
+                        foreach (InfantryUnitManager unit in GameManager.InfantryUnits)
                             if (!unit.ShowTurnIcon) unit.ShowTurnIcon = true;
-                        _grid.CurrentPhase = 0;
-                        _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
+                        GameManager.CurrentPhase = 0;
+                        GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
                     }
 
                     break;
             }
         }
-        
-        #region SystemImplementation
-        /*
-        _source.Play();
-        Unit tempCurrentlyChecked;
-        if (!InGameUIActive)
-        {
-            switch (_grid.CurrentPhase)
-            {
-                case 0:
-                    _grid.CurrentPhase = 1;
-                    _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
-                    break;
-
-                case 1:
-                    _grid.CurrentPhase = 2;
-                    _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
-                    break;
-
-                case 2:
-
-                    if (_grid.CurrentlyChecked)
-                    {
-                        _grid.CurrentlyChecked.IsChecked = false;
-                        _grid.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
-                        _grid.HideApproachables();
-                        _grid.CurrentlyChecked = null;
-                    }
-
-                    foreach (Unit unit in _grid.UnitsFirstSide)
-                    {
-                        foreach (Hex neighbor in unit.CurrentHex.GetNeighbors())
-                        {
-                            if (neighbor && neighbor.Unit && neighbor.Unit.Side != unit.Side)
-                            {
-                                if (unit.CurrentHex.GetDirection(neighbor) == unit.CurrentRotation.Previous() ||
-                                        unit.CurrentHex.GetDirection(neighbor) == unit.CurrentRotation ||
-                                        unit.CurrentHex.GetDirection(neighbor) == unit.CurrentRotation.Next())
-                                {
-                                    if (!unit.HasEnemies())
-                                    {
-                                        unit.MarkerRenderer.sprite = unit.Markers[3];
-                                        _grid.UnitsWithEnemies.Add(unit);
-                                    }
-                                    if (!_grid.EnemiesInControlZone.Contains(neighbor.Unit))
-                                        _grid.EnemiesInControlZone.Add(neighbor.Unit);
-                                    unit.AvailableEnemies.Add(neighbor.Unit);
-                                    if (neighbor.Unit.MarkerRenderer.sprite == null)
-                                        neighbor.Unit.MarkerRenderer.sprite = neighbor.Unit.Markers[5];
-                                }
-                            }
-                        }
-                    }
-                    //_grid.CurrentPhase = ++_grid.CurrentPhase % 8;
-                    _grid.CurrentPhase = 3;
-                    _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
-
-                    break;
-
-                case 3:
-
-                    tempCurrentlyChecked = _grid.CurrentlyChecked;
-                    if (_grid.CurrentlyChecked)
-                    {
-                        _grid.CurrentlyChecked.IsChecked = false;
-                        _grid.CurrentlyChecked = null;
-                    }
-                    if (_grid.UnitsWithEnemies.Count != 0)
-                    {
-                        foreach (Unit unit in _grid.UnitsWithEnemies)
-                        {
-                            if (unit.AttackedEnemies.Count == 0)
-                            {
-                                _grid.Camera.ShowingUnitsObligedToFight = true;
-                                TurnButton.enabled = false;
-                                return;
-                            }
-                        }
-                        foreach (Unit enemy in _grid.EnemiesInControlZone)
-                        {
-                            if (enemy.AttackingEnemies.Count == 0)
-                            {
-                                _grid.Camera.ShowingUnitsObligedToFight = true;
-                                TurnButton.enabled = false;
-                                return;
-                            }
-                        }
-
-                        foreach (Unit unit in _grid.UnitsWithEnemies)
-                        {
-                            unit.MarkerRenderer.sprite = null;
-                            if (tempCurrentlyChecked) foreach (Unit enemy in tempCurrentlyChecked.AttackedEnemies)
-                                    enemy.MarkerRenderer.sprite = null;
-                            if (unit.AttackedEnemies.Count == 1 && unit.AttackedEnemies[0].AttackingEnemies.Count > 1) // JESLI PARTYCYPUJE W ATAKU KILKU NA JEDNEGO
-                            {
-                                if (!_grid.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
-                                    _grid.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
-                            }
-                            else
-                                _grid.UnitsAttackingManyOrOne.Add(unit);
-                        }
-                        _grid.Camera.ShowingFights = true;
-                        TurnButton.enabled = false;
-                    }
-                    else
-                    {
-                        foreach (InfantryUnit unit in _grid.InfantryUnits)
-                            if (!unit.ShowTurnIcon) unit.ShowTurnIcon = true;
-                        //_grid.CurrentPhase = ++_grid.CurrentPhase % 8;
-                        _grid.CurrentPhase = 4;
-                        _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
-                    }
-
-                    break;
-
-                case 4:
-                    _grid.CurrentPhase = 5;
-                    _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
-                    break;
-
-                case 5:
-                    _grid.CurrentPhase = 6;
-                    _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
-                    break;
-
-                case 6:
-
-                    if (_grid.CurrentlyChecked)
-                    {
-                        _grid.CurrentlyChecked.IsChecked = false;
-                        _grid.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
-                        _grid.HideApproachables();
-                        _grid.CurrentlyChecked = null;
-                    }
-
-                    foreach (Unit unit in _grid.UnitsSecondSide)
-                    {
-                        foreach (Hex neighbor in unit.CurrentHex.GetNeighbors())
-                        {
-                            if (neighbor && neighbor.Unit && neighbor.Unit.Side != unit.Side)
-                            {
-                                if (unit.CurrentHex.GetDirection(neighbor) == unit.CurrentRotation.Previous() ||
-                                    unit.CurrentHex.GetDirection(neighbor) == unit.CurrentRotation ||
-                                    unit.CurrentHex.GetDirection(neighbor) == unit.CurrentRotation.Next())
-                                {
-                                    if (!unit.HasEnemies())
-                                    {
-                                        unit.MarkerRenderer.sprite = unit.Markers[3];
-                                        _grid.UnitsWithEnemies.Add(unit);
-                                    }
-                                    if (!_grid.EnemiesInControlZone.Contains(neighbor.Unit))
-                                        _grid.EnemiesInControlZone.Add(neighbor.Unit);
-                                    unit.AvailableEnemies.Add(neighbor.Unit);
-                                    if (neighbor.Unit.MarkerRenderer.sprite == null)
-                                        neighbor.Unit.MarkerRenderer.sprite = neighbor.Unit.Markers[5];
-                                }
-                            }
-                        }
-                    }
-                    _grid.CurrentPhase = 7;
-                    _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
-
-                    break;
-
-                case 7:
-
-                    tempCurrentlyChecked = _grid.CurrentlyChecked;
-                    if (_grid.CurrentlyChecked)
-                        if (_grid.CurrentlyChecked)
-                        {
-                            _grid.CurrentlyChecked.IsChecked = false;
-                            _grid.CurrentlyChecked = null;
-                        }
-                    if (_grid.UnitsWithEnemies.Count != 0)
-                    {
-                        foreach (Unit unit in _grid.UnitsWithEnemies)
-                        {
-                            if (unit.AttackedEnemies.Count == 0)
-                            {
-                                _grid.Camera.ShowingUnitsObligedToFight = true;
-                                TurnButton.enabled = false;
-                                return;
-                            }
-                        }
-                        foreach (Unit enemy in _grid.EnemiesInControlZone)
-                        {
-                            if (enemy.AttackingEnemies.Count == 0)
-                            {
-                                _grid.Camera.ShowingUnitsObligedToFight = true;
-                                TurnButton.enabled = false;
-                                return;
-                            }
-                        }
-
-                        foreach (Unit unit in _grid.UnitsWithEnemies)
-                        {
-                            unit.MarkerRenderer.sprite = null;
-                            if (tempCurrentlyChecked) foreach (Unit enemy in tempCurrentlyChecked.AttackedEnemies)
-                                    enemy.MarkerRenderer.sprite = null;
-                            if (unit.AttackedEnemies.Count == 1 && unit.AttackedEnemies[0].AttackingEnemies.Count > 1) // JESLI PARTYCYPUJE W ATAKU KILKU NA JEDNEGO
-                            {
-                                if (!_grid.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
-                                    _grid.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
-                            }
-                            else
-                                _grid.UnitsAttackingManyOrOne.Add(unit);
-                        }
-                        _grid.Camera.ShowingFights = true;
-                        TurnButton.enabled = false;
-                    }
-                    else
-                    {
-                        _grid.CurrentTurnText.text = "Turn:  " + (++_grid.CurrentTurn).ToString() + "/20";
-                        foreach (Unit unit in _grid.Units)
-                        {
-                            unit.Mobility = unit.MaxMobility;
-                            unit.SetUnitInfoText();
-                            unit.SetUnitBarText();
-                            unit.AvailableEnemies.Clear();
-                        }
-                        foreach (InfantryUnit unit in _grid.InfantryUnits)
-                            if (!unit.ShowTurnIcon) unit.ShowTurnIcon = true;
-                        _grid.CurrentPhase = 0;
-                        _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
-                    }
-
-                    break;
-            }
-        }*/
-        #endregion
     }
 
     public override void OnQuitGameButton()

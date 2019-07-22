@@ -3,7 +3,7 @@
 public class InfantryUnitManager : UnitManager
 {
     #region Variables & Properties
-    [SerializeField]
+    
     protected GameObject _turnIcon;
 
     private bool _showTurnIcon = true;
@@ -25,7 +25,7 @@ public class InfantryUnitManager : UnitManager
         {
             if (Side == GameManager.Side.Northman)
             {
-                switch (Grid.CurrentPhase)
+                switch (GameManager.CurrentPhase)
                 {
                     case 0:
                         return 1;
@@ -42,7 +42,7 @@ public class InfantryUnitManager : UnitManager
             }
             else if (Side == GameManager.Side.Anglosaxons)
             {
-                switch (Grid.CurrentPhase)
+                switch (GameManager.CurrentPhase)
                 {
                     case 1:
                         if (MarkerRenderer.sprite == Markers[4])
@@ -66,7 +66,10 @@ public class InfantryUnitManager : UnitManager
     protected override void Start()
     {
         base.Start();
-        Grid.InfantryUnits.Add(this);
+        Transform infoAndIcons = transform.GetChild(0).Find("InfoAndIcons");
+        _turnIcon = infoAndIcons.GetChild(1).gameObject;
+        for (int i = 2; i < infoAndIcons.childCount; i++) _shieldsIcons.Add(infoAndIcons.GetChild(i).gameObject);
+        GameManager.InfantryUnits.Add(this);
     }
     #endregion
 }

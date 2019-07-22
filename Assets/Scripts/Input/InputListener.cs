@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -15,7 +16,9 @@ public class InputListener : MonoBehaviour {
     private PointerEventData _pointerEventData;
     private GraphicRaycaster _graphicRaycaster;
     private EventSystem _eventSystem;
-   
+    public static bool TouchedOnContext = false;
+    public static int CouroutineCounter = 0;
+
     void Awake()
     {
         Input.simulateMouseWithTouches = false;
@@ -46,36 +49,36 @@ void Update ()
             if ((Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began) ||
                     Input.GetMouseButtonDown(0))
             {
-                if (_grid.Camera.SlidingThroughUnits) _grid.Camera.ShowWinInstantly();
+                if (GameManager.Camera.SlidingThroughUnits) GameManager.Camera.ShowWinInstantly();
                 else _ingameUI.OnQuitGameButton();
             }
         }
         else if (!_ingameUI.InGameUIActive)
         {
-            if (_grid.Camera.CurrentCameraState == HexMapCamera.CameraState.ShowingUnitsObligedToFight)
+            if (GameManager.Camera.CurrentCameraState == HexMapCamera.CameraState.ShowingUnitsObligedToFight)
             {
                 if ((Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began) ||
                     Input.GetMouseButtonDown(0))
-                    _grid.Camera.CurrentCameraState = HexMapCamera.CameraState.Free;
+                    GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.Free;
             }
-            else if (_grid.Camera.CurrentCameraState == HexMapCamera.CameraState.ShowingFights)
+            else if (GameManager.Camera.CurrentCameraState == HexMapCamera.CameraState.ShowingFights)
             {
                 if ((Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began) ||
                     Input.GetMouseButtonDown(0))
                 {
-                    if (_grid.Camera.Index == _grid.Camera.Units.Count)
+                    if (GameManager.Camera.Index == GameManager.Camera.Units.Count)
                     {
                         _ingameUI.TurnButton.enabled = true;
-                        _grid.Camera.HideMarkersFromPreviousFight();
-                        _grid.Camera.CurrentCameraState = HexMapCamera.CameraState.Free;
+                        GameManager.Camera.HideMarkersFromPreviousFight();
+                        GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.Free;
 
                     }
                     else
                     {
-                        if (_grid.Camera.SlidingThroughUnits)
-                            _grid.Camera.ShowNextFight();
+                        if (GameManager.Camera.SlidingThroughUnits)
+                            GameManager.Camera.ShowNextFight();
                         else
-                            _grid.Camera.SlideToNextFight();
+                            GameManager.Camera.SlideToNextFight();
                     }
                 }
             }
@@ -109,14 +112,14 @@ void Update ()
                                             hex.Unit.UnitController.OnRightMouseDownEnemyFight();
                                             break;
                                         default:
-                                            if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleRightClick(hex);
+                                            if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
                                             break;
                                     }
                                 }
-                                else if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleRightClick(hex);
+                                else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
                             }
                         }
-                        else if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleRightClick(null);
+                        else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(null);
                     }
 
                     if (Input.GetTouch(0).phase == TouchPhase.Ended)
@@ -147,14 +150,14 @@ void Update ()
                                                 hex.Unit.UnitController.OnLeftMouseDownEnemyFightUncheck();
                                                 break;
                                             default:
-                                                if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleLeftClick(hex);
+                                                if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
                                                 break;
                                         }
                                     }
-                                    else if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleLeftClick(hex);
+                                    else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
                                 }
                             }
-                            else if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleLeftClick(null);
+                            else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(null);
                         }
                         _acumTime = 0;
                         _touchHeldProcessed = false;
@@ -162,7 +165,7 @@ void Update ()
                     else if (Input.GetTouch(0).phase == TouchPhase.Began)
                     {
                         if (IsPointerOverUIObject(Input.GetTouch(0).position))
-                            StartCoroutine(HexMapCamera.TouchDelay());
+                            StartCoroutine(TouchDelay());
                         else
                         {
                             Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -173,8 +176,8 @@ void Update ()
 
                                 if (_touchedHex)
                                 {
-                                    if (((_touchedHex.Unit && _touchedHex.Unit.Unlocked != 0) || (_grid.CurrentlyChecked && _grid.ApproachableHexes.Contains(_touchedHex))))
-                                        StartCoroutine(HexMapCamera.TouchDelay());
+                                    if (((_touchedHex.Unit && _touchedHex.Unit.Unlocked != 0) || (GameManager.CurrentlyChecked && _grid.ApproachableHexes.Contains(_touchedHex))))
+                                        StartCoroutine(TouchDelay());
                                 }
                             }
                         }
@@ -207,13 +210,13 @@ void Update ()
                                         hex.Unit.UnitController.OnLeftMouseDownEnemyFightUncheck();
                                         break;
                                     default:
-                                        if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleLeftClick(hex);
+                                        if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
                                         break;
                                 }
                             }
-                            else if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleLeftClick(hex);
+                            else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
                         }
-                        else if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleLeftClick(null);
+                        else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(null);
                     }
                     else if (Input.GetMouseButtonDown(1))
                     {
@@ -239,13 +242,13 @@ void Update ()
                                         hex.Unit.UnitController.OnLeftMouseDownEnemyFightUncheck();
                                         break;
                                     default:
-                                        if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleRightClick(hex);
+                                        if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
                                         break;
                                 }
                             }
-                            else if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleRightClick(hex);
+                            else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
                         }
-                        else if (_grid.CurrentlyChecked) _grid.CurrentlyChecked.HandleRightClick(null);
+                        else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(null);
                     }
 
                     if (Input.GetKeyDown(KeyCode.Escape))
@@ -263,5 +266,15 @@ void Update ()
                 }
             }
         }
+    }
+
+    public static IEnumerator TouchDelay()
+    {
+        CouroutineCounter++;
+        TouchedOnContext = true;
+        yield return new WaitForSeconds(0.15f);
+        CouroutineCounter--;
+        if (CouroutineCounter == 0)
+            TouchedOnContext = false;
     }
 }

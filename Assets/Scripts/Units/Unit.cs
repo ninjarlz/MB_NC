@@ -4,7 +4,7 @@ using TMPro;
 
 
 public abstract class Unit : MonoBehaviour {
-
+    /*
     #region Variables & Properties
 
     //FOR DEBUG 
@@ -600,6 +600,6 @@ public abstract class Unit : MonoBehaviour {
         _unitBarText.text = Name + "\nPower: " + Power + "\nMobility: " + Mobility + "\nArmor: " + ShieldsIcons.Count + "\nState: " + (Condition ? "Fresh" : "Tired");
     }
 
-    #endregion
+    #endregion*/
 }
 

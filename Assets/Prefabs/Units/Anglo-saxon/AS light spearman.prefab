@@ -1134,10 +1134,12 @@ GameObject:
   m_Component:
   - component: {fileID: 4256030861752354}
   - component: {fileID: 136313364799821066}
-  - component: {fileID: 114572489358448222}
   - component: {fileID: 54560714151893870}
   - component: {fileID: 82251075239827522}
   - component: {fileID: 95581056758143190}
+  - component: {fileID: 114190155412916130}
+  - component: {fileID: 114432714441216808}
+  - component: {fileID: 114910625075949366}
   m_Layer: 0
   m_Name: AS light spearman
   m_TagString: Untagged
@@ -1536,7 +1538,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1914373447522098}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 2.99, z: 0}
   m_LocalScale: {x: 7, y: 7, z: 7}
   m_Children:
   - {fileID: 224496368631099544}
@@ -3230,6 +3232,49 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &114190155412916130
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1914373447522098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe18ba4f9c016842a9506aa8f4a80ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _name: ' 1. L. Spear.'
+  _moveSpeed: 30
+  _rotationSpeed: 80
+  _currentState: 3
+  _currentRotation: 3
+  _markers:
+  - {fileID: 21300000, guid: 3f42546f43cb3cf48a2f6defec7d759e, type: 3}
+  - {fileID: 21300000, guid: 8560b26779cc6ef41b85895e6ca5a3ad, type: 3}
+  - {fileID: 21300000, guid: c5df314a46eb0b948b38fa5755381209, type: 3}
+  - {fileID: 21300000, guid: ba7fb33a8ef8aea4ab2bbbda3631eb39, type: 3}
+  - {fileID: 21300000, guid: 6dcce8ebdea3a8942822ef77d2c2a32f, type: 3}
+  - {fileID: 21300000, guid: 9a006cbb99859d84183c757be10e8d4c, type: 3}
+  _side: 1
+  _power: 1
+  _tPower: 1
+  _currentCondition: 0
+  _canvasUI: {fileID: 0}
+  _mobility: 6
+  _maxMobility: 6
+  _isChecked: 0
+  _currentHex: {fileID: 0}
+--- !u!114 &114432714441216808
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1914373447522098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d113597413b3d284680af47c9f9f808b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114490805474328942
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3251,43 +3296,6 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 100
---- !u!114 &114572489358448222
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1914373447522098}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a4df03e7fff1524b99ba6840ea50d4b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _name: 1. L. Spear.
-  _moveSpeed: 30
-  _rotationSpeed: 80
-  _currentState: 3
-  _currentRotation: 3
-  _markers:
-  - {fileID: 21300000, guid: 3f42546f43cb3cf48a2f6defec7d759e, type: 3}
-  - {fileID: 21300000, guid: 8560b26779cc6ef41b85895e6ca5a3ad, type: 3}
-  - {fileID: 21300000, guid: c5df314a46eb0b948b38fa5755381209, type: 3}
-  - {fileID: 21300000, guid: ba7fb33a8ef8aea4ab2bbbda3631eb39, type: 3}
-  - {fileID: 21300000, guid: 6dcce8ebdea3a8942822ef77d2c2a32f, type: 3}
-  - {fileID: 21300000, guid: 9a006cbb99859d84183c757be10e8d4c, type: 3}
-  _side: 0
-  _power: 1
-  _tPower: 1
-  _condition: 1
-  _isBlockedByEnemyControlZone: 0
-  _canvasUI: {fileID: 0}
-  _shieldsIcons:
-  - {fileID: 1931164546928578}
-  - {fileID: 1094750819737934}
-  _mobility: 6
-  _maxMobility: 6
-  _isChecked: 0
-  _currentHex: {fileID: 0}
-  _turnIcon: {fileID: 1242119152402004}
 --- !u!114 &114784042568191820
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3401,6 +3409,18 @@ MonoBehaviour:
   - {fileID: 0}
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &114910625075949366
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1914373447522098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4658029114e9684ea4d3628f1b8394b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isBlockedByEnemyControlZone: 0
 --- !u!136 &136313364799821066
 CapsuleCollider:
   m_ObjectHideFlags: 1

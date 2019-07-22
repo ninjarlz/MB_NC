@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.PostProcessing;
-using System.Collections;
 using System.Collections.Generic;
-using TMPro;
-
 
 
 public class HexMapCamera : MonoBehaviour
@@ -61,10 +58,8 @@ public class HexMapCamera : MonoBehaviour
     private PostProcessingBehaviour _postProcessingBehaviour;
     private GameObject _cameraObject;
     private GameObject _light;
-    public static bool TouchedOnContext = false;
-    public static int CouroutineCounter = 0;
-    private List<Unit> _units = new List<Unit>();
-    public List<Unit> Units { get { return _units; } }
+    private List<UnitManager> _unitsAtFight = new List<UnitManager>();
+    public List<UnitManager> Units { get { return _unitsAtFight; } }
     private bool _centeredOnEnemy = false;
     public bool CenteredOnEnemy { get { return _centeredOnEnemy; } }
     private int _index = 0;
@@ -121,54 +116,54 @@ public class HexMapCamera : MonoBehaviour
             case CameraState.ShowingFights:
 
                 _fightStatement2.SetActive(false);
-                _units.Clear();
+                _unitsAtFight.Clear();
                 _zoomState = 0;
                 _index = 0;
                 _slidingThroughUnits = false;
-                foreach (Unit enemy in _grid.EnemiesInControlZone)
+                foreach (UnitManager enemy in GameManager.EnemiesInControlZone)
                 {
                     enemy.AttackedFromBack = false;
                     enemy.AttackingEnemies.Clear();
                 }
-                _grid.EnemiesInControlZone.Clear();
-                foreach (Unit unit in _grid.UnitsWithEnemies)
+                GameManager.EnemiesInControlZone.Clear();
+                foreach (UnitManager unit in GameManager.UnitsWithEnemies)
                 {
                     unit.AvailableEnemies.Clear();
                     unit.AttackedEnemies.Clear();
                 }
-                _grid.UnitsWithEnemies.Clear();
-                _grid.UnitsAttackingManyOrOne.Clear();
-                _grid.EnemyUnitsAttackedByMany.Clear();
-                if (_grid.AngloSaxonCounter == 0 && _grid.VikingCounter == 0)
+                GameManager.UnitsWithEnemies.Clear();
+                GameManager.UnitsAttackingManyOrOne.Clear();
+                GameManager.EnemyUnitsAttackedByMany.Clear();
+                if (GameManager.AngloSaxonCounter == 0 && GameManager.VikingCounter == 0)
                 {
                     _ingameUI.ShowWin(false, false);
                     return;
                 }
-                if (_grid.CurrentPhase == 3)
+                if (GameManager.CurrentPhase == 3)
                 {
-                    if (_grid.CurrentTurn == 30)
+                    if (GameManager.CurrentTurn == 30)
                     {
                         _ingameUI.ShowWin(false, false);
                         return;
                     }
-                    _grid.CurrentTurnText.text = "Turn:  " + (++_grid.CurrentTurn).ToString() + "/30";
-                    foreach (Unit unit in _grid.Units)
+                    GameManager.CurrentTurnText.text = "Turn:  " + (++GameManager.CurrentTurn).ToString() + "/30";
+                    foreach (UnitManager unit in GameManager.Units)
                     {
                         unit.Mobility = unit.MaxMobility;
                         unit.SetUnitInfoText();
                     }
-                    _grid.CurrentPhase = 0;
-                    foreach (InfantryUnit unit in _grid.InfantryUnits)
+                    GameManager.CurrentPhase = 0;
+                    foreach (InfantryUnitManager unit in GameManager.InfantryUnits)
                         if (!unit.ShowTurnIcon) unit.ShowTurnIcon = true;
                 }
-                else _grid.CurrentPhase = 2;
-                _grid.CurrentPhaseText.text = HexGrid.Phases[_grid.CurrentPhase];
+                else GameManager.CurrentPhase = 2;
+                GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
                 break;
 
             case CameraState.ShowingUnitsObligedToFight:
 
                 _fightStatement.SetActive(false);
-                _units.Clear();
+                _unitsAtFight.Clear();
                 _zoomState = 0;
                 _index = 0;
                 _slidingThroughUnits = false;
@@ -195,9 +190,9 @@ public class HexMapCamera : MonoBehaviour
             _sideAngle = false;
         }
         _slidingThroughUnits = true;
-        foreach (Unit enemy in _grid.EnemyUnitsAttackedByMany) _units.Add(enemy);
-        foreach (Unit unit in _grid.UnitsAttackingManyOrOne) _units.Add(unit);
-        _units.Sort((x, y) => x.transform.position.x.CompareTo(y.transform.position.x));
+        foreach (UnitManager enemy in GameManager.EnemyUnitsAttackedByMany) _unitsAtFight.Add(enemy);
+        foreach (UnitManager unit in GameManager.UnitsAttackingManyOrOne) _unitsAtFight.Add(unit);
+        _unitsAtFight.Sort((x, y) => x.transform.position.x.CompareTo(y.transform.position.x));
         if (_zoom > 0.75f) _zoomState = 1;
         else if (_zoom < 0.75f) _zoomState = 2;
         else _zoomState = 0;
@@ -222,25 +217,25 @@ public class HexMapCamera : MonoBehaviour
             _sideAngle = false;
         }
         _slidingThroughUnits = true;
-        foreach (Unit unit in _grid.UnitsWithEnemies)
+        foreach (UnitManager unit in GameManager.UnitsWithEnemies)
         {
             if (unit.AttackedEnemies.Count == 0)
             {
-                _units.Add(unit);
+                _unitsAtFight.Add(unit);
                 unit.MarkerRenderer.sprite = unit.Markers[3];
             }
             else unit.MarkerRenderer.sprite = unit.Markers[2];
         }
-        foreach (Unit enemy in _grid.EnemiesInControlZone)
+        foreach (UnitManager enemy in GameManager.EnemiesInControlZone)
         {
             if (enemy.AttackingEnemies.Count == 0)
             {
-                _units.Add(enemy);
+                _unitsAtFight.Add(enemy);
                 enemy.MarkerRenderer.sprite = enemy.Markers[5];
             }
             else enemy.MarkerRenderer.sprite = null;
         }
-        _units.Sort((x, y) => x.transform.position.x.CompareTo(y.transform.position.x));
+        _unitsAtFight.Sort((x, y) => x.transform.position.x.CompareTo(y.transform.position.x));
         if (_zoom > 0.75f) _zoomState = 1;
         else if (_zoom < 0.75f) _zoomState = 2;
         else _zoomState = 0;
@@ -291,7 +286,7 @@ public class HexMapCamera : MonoBehaviour
 
                 if (Mathf.Abs(turnAngleDelta) > 0f) AdjustRotationTouch(turnAngleDelta);
             }
-            else if (!TouchedOnContext)
+            else if (!InputListener.TouchedOnContext)
             {
                 float xDelta = Input.GetTouch(0).deltaPosition.x;
                 float zDelta = Input.GetTouch(0).deltaPosition.y;
@@ -302,7 +297,7 @@ public class HexMapCamera : MonoBehaviour
         //FOR DEBUGGING
         else
         {
-            TouchedOnContext = false;
+            InputListener.TouchedOnContext = false;
 
             float xDelta = 0f, zDelta = 0f, rotationDelta = 0f;
 
@@ -349,13 +344,13 @@ public class HexMapCamera : MonoBehaviour
         {
             transform.rotation = Quaternion.Euler(0f, 0f, 0f);
             foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-            foreach (Unit unit in _grid.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 0f, 0f);
+            foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 0f, 0f);
         }
         else
         {
             transform.rotation = Quaternion.Euler(0f, 180f, 0f);
             foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, 180f, 0f);
-            foreach (Unit unit in _grid.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 180f, 0f);
+            foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 180f, 0f);
         }
     }
 
@@ -363,7 +358,7 @@ public class HexMapCamera : MonoBehaviour
     {
         transform.rotation = Quaternion.Euler(0f, 90f, 0f);
         foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, 90f, 0f);
-        foreach (Unit unit in _grid.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 90f, 0f);
+        foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 90f, 0f);
     }
 
     private void AngleSwitching(angleSwitchingParam angleSwitchingTarget)
@@ -406,12 +401,12 @@ public class HexMapCamera : MonoBehaviour
         AngleSwitching(AngleSwitchingTarget);
         if (_slidingThroughUnits)
         {
-            Vector3 newPosition = new Vector3(_units[_index].transform.position.x, transform.position.y, _sideAngle ? _units[_index].transform.position.z + 50f : _units[_index].transform.position.z - 50f);
+            Vector3 newPosition = new Vector3(_unitsAtFight[_index].transform.position.x, transform.position.y, _sideAngle ? _unitsAtFight[_index].transform.position.z + 50f : _unitsAtFight[_index].transform.position.z - 50f);
             if (_index == 0) transform.position = Vector3.MoveTowards(transform.position, newPosition, 130f * Time.deltaTime);
             else transform.position = Vector3.MoveTowards(transform.position, newPosition, 45f * Time.deltaTime);
             if (transform.position == newPosition)
             {
-                _fightMechanics.HandleVisualAspectOfFight(_centeredOnEnemy, _units[_index]);
+                _fightMechanics.HandleVisualAspectOfFight(_centeredOnEnemy, _unitsAtFight[_index]);
                 _index++;
                 _slidingThroughUnits = false;
             }
@@ -425,13 +420,13 @@ public class HexMapCamera : MonoBehaviour
         AngleSwitching(AngleSwitchingTarget);
         if (_slidingThroughUnits)
         {
-            Vector3 newPosition = new Vector3(_units[_index].transform.position.x, transform.position.y, _sideAngle ? _units[_index].transform.position.z + 50f : _units[_index].transform.position.z - 50f);
+            Vector3 newPosition = new Vector3(_unitsAtFight[_index].transform.position.x, transform.position.y, _sideAngle ? _unitsAtFight[_index].transform.position.z + 50f : _unitsAtFight[_index].transform.position.z - 50f);
             if (_index == 0) transform.position = Vector3.MoveTowards(transform.position, newPosition, 130f * Time.deltaTime);
             else transform.position = Vector3.MoveTowards(transform.position, newPosition, 45f * Time.deltaTime);
             if (transform.position == newPosition)
             {
                 _index++;
-                if (_index == _units.Count)
+                if (_index == _unitsAtFight.Count)
                 {
                     _index = 0;
                     _slidingThroughUnits = false;
@@ -465,7 +460,6 @@ public class HexMapCamera : MonoBehaviour
         _swivel = transform.GetChild(0);
         _stick = _swivel.GetChild(0);
         _scrollBorderThickness *= Screen.height; // because ScrollBorderThickness should be percentage of screen height 
-        TouchedOnContext = false;
         _grid = GameObject.Find("Game").GetComponentInChildren<HexGrid>();
         _fightMechanics = gameObject.AddComponent<FightMechanics>();
         _fightMechanics.Grid = _grid;
@@ -535,7 +529,7 @@ public class HexMapCamera : MonoBehaviour
         float angle = Mathf.Lerp(_swivelMinZoom, _swivelMaxZoom, _zoom);
         _swivel.localRotation = Quaternion.Euler(angle, 0f, 0f);
 
-        foreach (Unit unit in _grid.Units)
+        foreach (UnitManager unit in GameManager.Units)
         {
             unit.CanvasInfo.transform.localRotation = Quaternion.Euler(angle, unit.CanvasInfo.transform.localRotation.eulerAngles.y, 0f);
             float textScale = Mathf.Lerp(unit.OriginalInfoSize.x, 0.25f, _zoom);
@@ -566,7 +560,7 @@ public class HexMapCamera : MonoBehaviour
         angle *= _rotationSpeedKeyboard * Time.deltaTime;
         transform.localRotation = Quaternion.Euler(0f, transform.localRotation.eulerAngles.y + angle, 0f);
         foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, hex.CostText.transform.rotation.eulerAngles.y + angle, 0f);
-        foreach (Unit unit in _grid.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, unit.CanvasInfo.transform.rotation.eulerAngles.y + angle, 0f);
+        foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, unit.CanvasInfo.transform.rotation.eulerAngles.y + angle, 0f);
     }
 
     void AdjustRotationTouch(float angle)
@@ -574,7 +568,7 @@ public class HexMapCamera : MonoBehaviour
         angle *= _rotationSpeedTouch;
         transform.localRotation = Quaternion.Euler(0f, transform.localRotation.eulerAngles.y  + angle, 0f);
         foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, hex.CostText.transform.rotation.eulerAngles.y + angle, 0f);
-        foreach (Unit unit in _grid.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, unit.CanvasInfo.transform.rotation.eulerAngles.y + angle, 0f);
+        foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, unit.CanvasInfo.transform.rotation.eulerAngles.y + angle, 0f);
     }
 
     Vector3 ClampPosition(Vector3 position)
@@ -597,21 +591,21 @@ public class HexMapCamera : MonoBehaviour
 
     public void ShowNextFight()
     {
-        transform.position = new Vector3(_units[_index].transform.position.x, transform.position.y, _sideAngle ? _units[_index].transform.position.z + 50f : _units[_index].transform.position.z - 50f);
+        transform.position = new Vector3(_unitsAtFight[_index].transform.position.x, transform.position.y, _sideAngle ? _unitsAtFight[_index].transform.position.z + 50f : _unitsAtFight[_index].transform.position.z - 50f);
         if (_index == 0) SetZoomAndAngleInstantly(true);
-        _fightMechanics.HandleVisualAspectOfFight(_centeredOnEnemy, _units[_index]);
+        _fightMechanics.HandleVisualAspectOfFight(_centeredOnEnemy, _unitsAtFight[_index]);
         _slidingThroughUnits = false;
         _index++;
     }
 
     public void HideMarkersFromPreviousFight()
     {
-        _units[_index - 1].MarkerRenderer.sprite = null;
+        _unitsAtFight[_index - 1].MarkerRenderer.sprite = null;
         if (_centeredOnEnemy)
-            foreach (Unit unit in _units[_index - 1].AttackingEnemies)
+            foreach (UnitManager unit in _unitsAtFight[_index - 1].AttackingEnemies)
                 unit.MarkerRenderer.sprite = null;
         else
-            foreach (Unit enemy in _units[_index - 1].AttackedEnemies)
+            foreach (UnitManager enemy in _unitsAtFight[_index - 1].AttackedEnemies)
                 enemy.MarkerRenderer.sprite = null;
         
     }
@@ -620,15 +614,15 @@ public class HexMapCamera : MonoBehaviour
     {
         if (_index > 0) HideMarkersFromPreviousFight();
         _slidingThroughUnits = true;
-        if (_grid.EnemyUnitsAttackedByMany.Contains(_units[_index]))
+        if (GameManager.EnemyUnitsAttackedByMany.Contains(_unitsAtFight[_index]))
         {
             _centeredOnEnemy = true;
-            _fightMechanics.ResolveFightCenteredOnEnemy(_units[_index]);
+            _fightMechanics.ResolveFightCenteredOnEnemy(_unitsAtFight[_index]);
         }
-        else // _grid.UnitsAttackingManyOrOne.Contains(_units[_index])
+        else // GameManager.UnitsAttackingManyOrOne.Contains(_unitsAtFight[_index])
         {
             _centeredOnEnemy = false;
-            _fightMechanics.ResolveFightCenteredOnUnit(_units[_index]);
+            _fightMechanics.ResolveFightCenteredOnUnit(_unitsAtFight[_index]);
         }
     }
 
@@ -650,7 +644,7 @@ public class HexMapCamera : MonoBehaviour
         float angle = Mathf.Lerp(_swivelMinZoom, _swivelMaxZoom, _zoom);
         _swivel.localRotation = Quaternion.Euler(angle, 0f, 0f);
 
-        foreach (Unit unit in _grid.Units)
+        foreach (UnitManager unit in GameManager.Units)
         {
             unit.CanvasInfo.transform.localRotation = Quaternion.Euler(angle, unit.CanvasInfo.transform.localRotation.eulerAngles.y, 0f);
             float textScale = Mathf.Lerp(unit.OriginalInfoSize.x, 0.25f, _zoom);
@@ -659,14 +653,5 @@ public class HexMapCamera : MonoBehaviour
         foreach (Hex hex in _hexes) foreach (SpriteRenderer renderer in hex.ArrowRenderers) renderer.transform.localScale = Vector3.Lerp(Vector3.one, new Vector3(0.85f, 0.85f, 0.85f), _zoom);
     }
 
-   public static IEnumerator TouchDelay()
-   {
-       CouroutineCounter++;
-       TouchedOnContext = true;
-       yield return new WaitForSeconds(0.15f);
-       CouroutineCounter--;
-       if (CouroutineCounter == 0)
-            TouchedOnContext = false;
-    }
-    #endregion
+   #endregion
 }

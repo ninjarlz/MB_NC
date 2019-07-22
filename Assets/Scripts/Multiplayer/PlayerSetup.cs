@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 public class PlayerSetup : NetworkBehaviour {
 
-    private OnlineInputListener _listener;
+    /*private OnlineInputListener _listener;
     [SerializeField] private Behaviour[] _toDisable;
     private Camera _sceneCamera;
     [SerializeField] private HexGrid _hexGrid;
@@ -45,5 +45,5 @@ public class PlayerSetup : NetworkBehaviour {
     void DisableComponents()
     {
         transform.GetChild(0).gameObject.SetActive(false);
-    }
+    }*/
 }

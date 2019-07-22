@@ -22,25 +22,6 @@ public static class HexDirectionExtensions
         
         if (direction < next) return 6 + direction - next < next - direction ? -(6 + direction - next) : next - direction;
         else return 6 - (int)direction + (int)next < direction - next ? 6 - (int)direction + (int)next : -(direction - next);
-
-        #region OldCode
-        /*int i = 0, j = 0;
-        HexDirection temp = direction;
-        while (temp != next)
-        {
-            i++;
-            temp = temp.Next();
-        }
-        temp = direction;
-        while (temp != next)
-        {
-            j--;
-            temp = temp.Previous();
-        }
-
-        if (-j < i) return j;
-        return i;*/
-        #endregion
     }
 
     public static HexDirection Previous(this HexDirection direction)

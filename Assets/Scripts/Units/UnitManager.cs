@@ -11,6 +11,7 @@ public abstract class UnitManager : MonoBehaviour
     UnitMovement _unitMovement;
     UnitController _unitController;
     public UnitController UnitController { get { return _unitController; } }
+    public UnitMovement UnitMovement { get { return _unitMovement; } }
 
     #endregion 
 
@@ -96,18 +97,17 @@ public abstract class UnitManager : MonoBehaviour
     protected GameObject _canvasUI;
     protected GameObject _model;
     public GameObject Model { get { return _model; } }
-    public List<Unit> FightList { get; set; }
+    public List<UnitManager> FightList { get; set; }
     public int IndexInFightList { get; set; }
-    public List<Unit> AttackingEnemies { get; private set; }
+    public List<UnitManager> AttackingEnemies { get; private set; }
     protected bool _attackedFromBack = false;
     public bool AttackedFromBack { get { return _attackedFromBack; } set { _attackedFromBack = value; } }
     public int AttackingEnemiesCounter { get { return AttackingEnemies.Count; } }
     protected bool _attackAssigned = false;
     public bool AttackAssigned { get { return _attackAssigned; } set { _attackAssigned = value; } }
-    public List<Unit> AvailableEnemies { get; private set; }
-    public List<Unit> AttackedEnemies { get; private set; }
-    [SerializeField]
-    private List<GameObject> _shieldsIcons;
+    public List<UnitManager> AvailableEnemies { get; private set; }
+    public List<UnitManager> AttackedEnemies { get; private set; }
+    protected List<GameObject> _shieldsIcons = new List<GameObject>();
     public List<GameObject> ShieldsIcons { get { return _shieldsIcons; } set { _shieldsIcons = value; } }
     public bool HasEnemies()
     {
@@ -150,7 +150,7 @@ public abstract class UnitManager : MonoBehaviour
             if (value) MarkerRenderer.sprite = Markers[0];
             else
             {
-                if (Grid.CurrentPhase == 1 || Grid.CurrentPhase == 3)
+                if (GameManager.CurrentPhase == 1 || GameManager.CurrentPhase == 3)
                 {
                     if (AttackedEnemies.Count > 0) MarkerRenderer.sprite = Markers[2];
                     else MarkerRenderer.sprite = Markers[3];
@@ -183,13 +183,13 @@ public abstract class UnitManager : MonoBehaviour
     protected virtual void Start()
     {
         _attackSound = GetComponent<AudioSource>();
-        AttackingEnemies = new List<Unit>();
-        AttackedEnemies = new List<Unit>();
-        AvailableEnemies = new List<Unit>();
+        AttackingEnemies = new List<UnitManager>();
+        AttackedEnemies = new List<UnitManager>();
+        AvailableEnemies = new List<UnitManager>();
         Grid = GameObject.Find("Game").GetComponentInChildren<HexGrid>();
-        Grid.Units.Add(this);
-        if (Side == GameManager.Side.Northman) Grid.UnitsFirstSide.Add(this);
-        else Grid.UnitsSecondSide.Add(this);
+        GameManager.Units.Add(this);
+        if (Side == GameManager.Side.Northman) GameManager.UnitsFirstSide.Add(this);
+        else GameManager.UnitsSecondSide.Add(this);
         _currentStateDelegate = Idle;
         Animator = GetComponentInChildren<Animator>();
         _model = transform.GetChild(2).gameObject;

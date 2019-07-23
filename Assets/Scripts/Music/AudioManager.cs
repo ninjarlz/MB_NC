@@ -1,35 +1,38 @@
 ﻿using UnityEngine;
 
-public class AudioManager : MonoBehaviour
+namespace com.MKG.MB_NC
 {
-
-    private float _currentTime = 0;
-    private AudioSource _track;
-    private bool _enabled = false;
-    public static bool Enabled = false;
-
-    // Use this for initialization
-	void Awake ()
+    public class AudioManager : MonoBehaviour
     {
-        if (!Enabled)
+
+        private float _currentTime = 0;
+        private AudioSource _track;
+        private bool _enabled = false;
+        public static bool Enabled = false;
+
+        // Use this for initialization
+        void Awake()
         {
-            DontDestroyOnLoad(gameObject);
-            _track = transform.GetChild(0).GetComponent<AudioSource>();
-            Enabled = true;
-            _enabled = true;
-            Application.targetFrameRate = 50;
+            if (!Enabled)
+            {
+                DontDestroyOnLoad(gameObject);
+                _track = transform.GetChild(0).GetComponent<AudioSource>();
+                Enabled = true;
+                _enabled = true;
+                Application.targetFrameRate = 50;
+            }
+            else Destroy(gameObject);
         }
-        else Destroy(gameObject);
-    }
-	
-	// Update is called once per frame
-	void Update ()
-    {
-        _currentTime = _track.time;
-	}
 
-    void OnLevelWasLoaded()
-    {
-        if (_enabled) _track.time = _currentTime;
+        // Update is called once per frame
+        void Update()
+        {
+            _currentTime = _track.time;
+        }
+
+        void OnLevelWasLoaded()
+        {
+            if (_enabled) _track.time = _currentTime;
+        }
     }
 }

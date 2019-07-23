@@ -3,18 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class OnlineInputListener : NetworkBehaviour {
+namespace com.MKG.MB_NC
+{
+    public class OnlineInputListener : NetworkBehaviour
+    {
 
-    public int Id { get; set; }
+        public int Id { get; set; }
 
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+        // Use this for initialization
+        void Start()
+        {
+
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+        }
+    }
 }

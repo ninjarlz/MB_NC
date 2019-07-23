@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 
-public class InfantryUnit : Unit
-{/*
+namespace com.MKG.MB_NC
+{
+    public class InfantryUnit : Unit
+    {/*
     #region Variables & Properties
     [SerializeField]
    protected GameObject _turnIcon;
@@ -362,4 +364,5 @@ public class InfantryUnit : Unit
         
     }
     #endregion*/
+    }
 }

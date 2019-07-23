@@ -1,26 +1,29 @@
 ﻿using System.Collections.Generic;
 
-public class FightResult
+namespace com.MKG.MB_NC
 {
-    
-    public int Damage { get; set; }
-    
-    FightResult(int damage)
+    public class FightResult
     {
-        Damage = damage;
-    }
 
-    public static List<FightResult> Parser(string fightResultName)
-    {
-        if (fightResultName == "-") return new List<FightResult> { null, null };
-        else
+        public int Damage { get; set; }
+
+        FightResult(int damage)
         {
-            List<FightResult> result = new List<FightResult>();
-            if (fightResultName[0] == '-') result.Add(null);
-            else result.Add(new FightResult(fightResultName[0] - '0'));
-            if (fightResultName[2] == '-') result.Add(null);
-            else result.Add(new FightResult(fightResultName[2] - '0'));
-            return result;
+            Damage = damage;
+        }
+
+        public static List<FightResult> Parser(string fightResultName)
+        {
+            if (fightResultName == "-") return new List<FightResult> { null, null };
+            else
+            {
+                List<FightResult> result = new List<FightResult>();
+                if (fightResultName[0] == '-') result.Add(null);
+                else result.Add(new FightResult(fightResultName[0] - '0'));
+                if (fightResultName[2] == '-') result.Add(null);
+                else result.Add(new FightResult(fightResultName[2] - '0'));
+                return result;
+            }
         }
     }
 }

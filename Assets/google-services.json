@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "37762542413",
+    "firebase_url": "https://mb-nc-a2dd3.firebaseio.com",
+    "project_id": "mb-nc-a2dd3",
+    "storage_bucket": "mb-nc-a2dd3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37762542413:android:0810e0e2c45fa711",
+        "android_client_info": {
+          "package_name": "com.MKG.MB_NC"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37762542413-eheri68t14btaml1d1e3suhqruesce0l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC_rcmcd7qlORfdtVMtYXlNpDdc5mWg90"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37762542413-5j5glvidqc7si62bci19kpk0t628f07o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

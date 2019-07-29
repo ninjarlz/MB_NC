@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 namespace com.MKG.MB_NC
 {
-    public class PlayerSetup : NetworkBehaviour
+    public class PlayerSetup : MonoBehaviour
     {
 
         /*private OnlineInputListener _listener;

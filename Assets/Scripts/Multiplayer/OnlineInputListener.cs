@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 namespace com.MKG.MB_NC
 {
-    public class OnlineInputListener : NetworkBehaviour
+    public class OnlineInputListener : MonoBehaviour
     {
 
         public int Id { get; set; }

@@ -5,7 +5,7 @@ using Firebase;
 using Firebase.Auth;
 using Google;
 using System.Threading.Tasks;
-
+using TMPro;
 
 namespace com.MKG.MB_NC
 {
@@ -16,6 +16,8 @@ namespace com.MKG.MB_NC
         private byte _maxPlayersPerRoom = 2;
         private FirebaseApp _app;
         private FirebaseAuth _auth;
+        [SerializeField]
+        private TextMeshProUGUI _text;
 
 
 
@@ -26,9 +28,10 @@ namespace com.MKG.MB_NC
                 RequestIdToken = true,
                 // Copy this value from the google-service.json file.
                 // oauth_client with type == 3
-                WebClientId = "[YOUR API CLIENT ID HERE].apps.googleusercontent.com"
+                WebClientId = "37762542413-eheri68t14btaml1d1e3suhqruesce0l.apps.googleusercontent.com"
             };
 
+         
             Task<GoogleSignInUser> signIn = GoogleSignIn.DefaultInstance.SignIn();
 
             TaskCompletionSource<FirebaseUser> signInCompleted = new TaskCompletionSource<FirebaseUser>();
@@ -45,16 +48,34 @@ namespace com.MKG.MB_NC
                 else
                 {
                     Credential credential = GoogleAuthProvider.GetCredential(((Task<GoogleSignInUser>)task).Result.IdToken, null);
-                    if (linkWithCurrentAnonUser)
-                    {
-                    //_auth.CurrentUser.LinkWithCredentialAsync(credential).ContinueWith(HandleLoginResult);
-                }
-                    else
-                    {
-                    //SignInWithCredential(credential);
-                }
+                    _auth.SignInWithCredentialAsync(credential).ContinueWith(task1 => {
+                        if (task1.IsCanceled)
+                        {
+                            Debug.LogError("SignInWithCredentialAsync was canceled.");
+                            return;
+                        }
+                        if (task1.IsFaulted)
+                        {
+                            Debug.LogError("SignInWithCredentialAsync encountered an error: " + task.Exception);
+                            return;
+                        }
+
+                        FirebaseUser newUser = task1.Result;
+                        _text.text = newUser.Email;
+                        
+                    });
                 }
             });
+            _text.text = "i chuj";
+        }
+
+        private void SignInWithCredential(Credential credential)
+        {
+            if (_auth != null)
+            {
+                _auth.SignInWithCredentialAsync(credential);
+                _text.text = "ooo";
+            }
         }
 
 
@@ -85,6 +106,7 @@ namespace com.MKG.MB_NC
 
         private void Awake()
         {
+            _text.text = "ggg";
             SetupFirebase();
             PhotonNetwork.AutomaticallySyncScene = true;
         }
@@ -96,14 +118,21 @@ namespace com.MKG.MB_NC
 
         }
 
+        void Update() {
+            
+            //_text.text = _auth.CurrentUser.Email;
+        }
+
         public void Connect()
         {
+            _text.text = "kkk";
             if (PhotonNetwork.IsConnected) PhotonNetwork.JoinRandomRoom();
             else
             {
                 PhotonNetwork.GameVersion = _gameVersion;
                 PhotonNetwork.ConnectUsingSettings();
             }
+            SignInWithGoogle(true);
         }
         public override void OnConnectedToMaster()
         {

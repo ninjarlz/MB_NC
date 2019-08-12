@@ -15,7 +15,7 @@ namespace com.MKG.MB_NC
         public void Setup(UnitManager unitManager)
         {
             _unitManager = unitManager;
-            _grid = GameManager.Grid;
+            _grid = MatchManager.Grid;
             _animator = GetComponent<Animator>();
         }
 

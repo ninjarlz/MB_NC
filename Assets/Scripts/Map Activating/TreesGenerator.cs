@@ -17,7 +17,7 @@ namespace com.MKG.MB_NC
                 Hex hex = hexes.transform.GetChild(i).GetComponent<Hex>();
                 if (hex.HasTrees)
                 {
-                    GameObject forest = Instantiate(GameManager.Instance.Trees[Random.Range(0, 3)]);
+                    GameObject forest = Instantiate(MatchManager.Instance.Trees[Random.Range(0, 3)]);
                     forest.transform.position = hex.transform.position;
                     forest.transform.rotation = Quaternion.Euler(new Vector3(0, Random.Range(0, 360)));
                     forest.transform.parent = trees.transform;

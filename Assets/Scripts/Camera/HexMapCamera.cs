@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.PostProcessing;
 using System.Collections.Generic;
+using TMPro;
 
 namespace com.MKG.MB_NC
 {
@@ -11,7 +12,7 @@ namespace com.MKG.MB_NC
         private float _scrollBorderThickness = 0.005f;  // percentage of screen height
 
         // FOR DEBUG
-        /*//####################
+        //####################
 
         [SerializeField]
         private TextMeshProUGUI _fpsCounter;
@@ -21,7 +22,7 @@ namespace com.MKG.MB_NC
         private int _frames = 0; // Frames drawn over the interval
         private float _timeLeft; // Left time for current interval
 
-        //###################*/
+        //###################
 
         [SerializeField]
         private float _stickMinZoom = -250f;
@@ -121,44 +122,44 @@ namespace com.MKG.MB_NC
                     _zoomState = 0;
                     _index = 0;
                     _slidingThroughUnits = false;
-                    foreach (UnitManager enemy in GameManager.EnemiesInControlZone)
+                    foreach (UnitManager enemy in MatchManager.EnemiesInControlZone)
                     {
                         enemy.AttackedFromBack = false;
                         enemy.AttackingEnemies.Clear();
                     }
-                    GameManager.EnemiesInControlZone.Clear();
-                    foreach (UnitManager unit in GameManager.UnitsWithEnemies)
+                    MatchManager.EnemiesInControlZone.Clear();
+                    foreach (UnitManager unit in MatchManager.UnitsWithEnemies)
                     {
                         unit.AvailableEnemies.Clear();
                         unit.AttackedEnemies.Clear();
                     }
-                    GameManager.UnitsWithEnemies.Clear();
-                    GameManager.UnitsAttackingManyOrOne.Clear();
-                    GameManager.EnemyUnitsAttackedByMany.Clear();
-                    if (GameManager.AngloSaxonCounter == 0 && GameManager.VikingCounter == 0)
+                    MatchManager.UnitsWithEnemies.Clear();
+                    MatchManager.UnitsAttackingManyOrOne.Clear();
+                    MatchManager.EnemyUnitsAttackedByMany.Clear();
+                    if (MatchManager.AngloSaxonCounter == 0 && MatchManager.VikingCounter == 0)
                     {
                         _ingameUI.ShowWin(false, false);
                         return;
                     }
-                    if (GameManager.CurrentPhase == 3)
+                    if (MatchManager.CurrentPhase == 3)
                     {
-                        if (GameManager.CurrentTurn == 30)
+                        if (MatchManager.CurrentTurn == 30)
                         {
                             _ingameUI.ShowWin(false, false);
                             return;
                         }
-                        GameManager.CurrentTurnText.text = "Turn:  " + (++GameManager.CurrentTurn).ToString() + "/30";
-                        foreach (UnitManager unit in GameManager.Units)
+                        MatchManager.CurrentTurnText.text = "Turn:  " + (++MatchManager.CurrentTurn).ToString() + "/30";
+                        foreach (UnitManager unit in MatchManager.Units)
                         {
                             unit.Mobility = unit.MaxMobility;
                             unit.SetUnitInfoText();
                         }
-                        GameManager.CurrentPhase = 0;
-                        foreach (InfantryUnitManager unit in GameManager.InfantryUnits)
+                        MatchManager.CurrentPhase = 0;
+                        foreach (InfantryUnitManager unit in MatchManager.InfantryUnits)
                             if (!unit.ShowTurnIcon) unit.ShowTurnIcon = true;
                     }
-                    else GameManager.CurrentPhase = 2;
-                    GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
+                    else MatchManager.CurrentPhase = 2;
+                    MatchManager.CurrentPhaseText.text = MatchManager.Phases[MatchManager.CurrentPhase];
                     break;
 
                 case CameraState.ShowingUnitsObligedToFight:
@@ -191,8 +192,8 @@ namespace com.MKG.MB_NC
                 _sideAngle = false;
             }
             _slidingThroughUnits = true;
-            foreach (UnitManager enemy in GameManager.EnemyUnitsAttackedByMany) _unitsAtFight.Add(enemy);
-            foreach (UnitManager unit in GameManager.UnitsAttackingManyOrOne) _unitsAtFight.Add(unit);
+            foreach (UnitManager enemy in MatchManager.EnemyUnitsAttackedByMany) _unitsAtFight.Add(enemy);
+            foreach (UnitManager unit in MatchManager.UnitsAttackingManyOrOne) _unitsAtFight.Add(unit);
             _unitsAtFight.Sort((x, y) => x.transform.position.x.CompareTo(y.transform.position.x));
             if (_zoom > 0.75f) _zoomState = 1;
             else if (_zoom < 0.75f) _zoomState = 2;
@@ -218,7 +219,7 @@ namespace com.MKG.MB_NC
                 _sideAngle = false;
             }
             _slidingThroughUnits = true;
-            foreach (UnitManager unit in GameManager.UnitsWithEnemies)
+            foreach (UnitManager unit in MatchManager.UnitsWithEnemies)
             {
                 if (unit.AttackedEnemies.Count == 0)
                 {
@@ -227,7 +228,7 @@ namespace com.MKG.MB_NC
                 }
                 else unit.MarkerRenderer.sprite = unit.Markers[2];
             }
-            foreach (UnitManager enemy in GameManager.EnemiesInControlZone)
+            foreach (UnitManager enemy in MatchManager.EnemiesInControlZone)
             {
                 if (enemy.AttackingEnemies.Count == 0)
                 {
@@ -345,13 +346,13 @@ namespace com.MKG.MB_NC
             {
                 transform.rotation = Quaternion.Euler(0f, 0f, 0f);
                 foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-                foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 0f, 0f);
+                foreach (UnitManager unit in MatchManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 0f, 0f);
             }
             else
             {
                 transform.rotation = Quaternion.Euler(0f, 180f, 0f);
                 foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, 180f, 0f);
-                foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 180f, 0f);
+                foreach (UnitManager unit in MatchManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 180f, 0f);
             }
         }
 
@@ -359,7 +360,7 @@ namespace com.MKG.MB_NC
         {
             transform.rotation = Quaternion.Euler(0f, 90f, 0f);
             foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, 90f, 0f);
-            foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 90f, 0f);
+            foreach (UnitManager unit in MatchManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, 90f, 0f);
         }
 
         private void AngleSwitching(angleSwitchingParam angleSwitchingTarget)
@@ -470,10 +471,10 @@ namespace com.MKG.MB_NC
         {
             if (QualitySettings.GetQualityLevel() == 0)
             {
-                _postProcessingBehaviour.profile = _midProfile;
+                _postProcessingBehaviour.profile = _lowProfile;
                 _light.GetComponent<Light>().intensity = 1.65f;
             }
-            else if (QualitySettings.GetQualityLevel() == 1)
+            else if (QualitySettings.GetQualityLevel() < 3)
             {
                 _postProcessingBehaviour.profile = _midProfile;
                 _light.GetComponent<Light>().intensity = 1.65f;
@@ -498,7 +499,7 @@ namespace com.MKG.MB_NC
 
 
             //FOR DEBUG
-            /*//######################
+            //######################
 
             _timeLeft -= Time.deltaTime;
             _accum += 1 / Time.deltaTime;
@@ -514,7 +515,7 @@ namespace com.MKG.MB_NC
                 _frames = 0;
             }
 
-            //#######################*/
+            //#######################
 
         }
         #endregion
@@ -530,7 +531,7 @@ namespace com.MKG.MB_NC
             float angle = Mathf.Lerp(_swivelMinZoom, _swivelMaxZoom, _zoom);
             _swivel.localRotation = Quaternion.Euler(angle, 0f, 0f);
 
-            foreach (UnitManager unit in GameManager.Units)
+            foreach (UnitManager unit in MatchManager.Units)
             {
                 unit.CanvasInfo.transform.localRotation = Quaternion.Euler(angle, unit.CanvasInfo.transform.localRotation.eulerAngles.y, 0f);
                 float textScale = Mathf.Lerp(unit.OriginalInfoSize.x, 0.25f, _zoom);
@@ -561,7 +562,7 @@ namespace com.MKG.MB_NC
             angle *= _rotationSpeedKeyboard * Time.deltaTime;
             transform.localRotation = Quaternion.Euler(0f, transform.localRotation.eulerAngles.y + angle, 0f);
             foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, hex.CostText.transform.rotation.eulerAngles.y + angle, 0f);
-            foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, unit.CanvasInfo.transform.rotation.eulerAngles.y + angle, 0f);
+            foreach (UnitManager unit in MatchManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, unit.CanvasInfo.transform.rotation.eulerAngles.y + angle, 0f);
         }
 
         void AdjustRotationTouch(float angle)
@@ -569,7 +570,7 @@ namespace com.MKG.MB_NC
             angle *= _rotationSpeedTouch;
             transform.localRotation = Quaternion.Euler(0f, transform.localRotation.eulerAngles.y + angle, 0f);
             foreach (Hex hex in _hexes) hex.CostText.transform.rotation = Quaternion.Euler(90f, hex.CostText.transform.rotation.eulerAngles.y + angle, 0f);
-            foreach (UnitManager unit in GameManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, unit.CanvasInfo.transform.rotation.eulerAngles.y + angle, 0f);
+            foreach (UnitManager unit in MatchManager.Units) unit.CanvasInfo.transform.rotation = Quaternion.Euler(unit.CanvasInfo.transform.rotation.eulerAngles.x, unit.CanvasInfo.transform.rotation.eulerAngles.y + angle, 0f);
         }
 
         Vector3 ClampPosition(Vector3 position)
@@ -615,12 +616,12 @@ namespace com.MKG.MB_NC
         {
             if (_index > 0) HideMarkersFromPreviousFight();
             _slidingThroughUnits = true;
-            if (GameManager.EnemyUnitsAttackedByMany.Contains(_unitsAtFight[_index]))
+            if (MatchManager.EnemyUnitsAttackedByMany.Contains(_unitsAtFight[_index]))
             {
                 _centeredOnEnemy = true;
                 _fightMechanics.ResolveFightCenteredOnEnemy(_unitsAtFight[_index]);
             }
-            else // GameManager.UnitsAttackingManyOrOne.Contains(_unitsAtFight[_index])
+            else // MatchManager.UnitsAttackingManyOrOne.Contains(_unitsAtFight[_index])
             {
                 _centeredOnEnemy = false;
                 _fightMechanics.ResolveFightCenteredOnUnit(_unitsAtFight[_index]);
@@ -645,7 +646,7 @@ namespace com.MKG.MB_NC
             float angle = Mathf.Lerp(_swivelMinZoom, _swivelMaxZoom, _zoom);
             _swivel.localRotation = Quaternion.Euler(angle, 0f, 0f);
 
-            foreach (UnitManager unit in GameManager.Units)
+            foreach (UnitManager unit in MatchManager.Units)
             {
                 unit.CanvasInfo.transform.localRotation = Quaternion.Euler(angle, unit.CanvasInfo.transform.localRotation.eulerAngles.y, 0f);
                 float textScale = Mathf.Lerp(unit.OriginalInfoSize.x, 0.25f, _zoom);

@@ -25,9 +25,9 @@ namespace com.MKG.MB_NC
         {
             get
             {
-                if (Side == GameManager.Side.Northman)
+                if (Side == MatchManager.Side.Northman)
                 {
-                    switch (GameManager.CurrentPhase)
+                    switch (MatchManager.CurrentPhase)
                     {
                         case 0:
                             return 1;
@@ -42,9 +42,9 @@ namespace com.MKG.MB_NC
                             break;
                     }
                 }
-                else if (Side == GameManager.Side.Anglosaxons)
+                else if (Side == MatchManager.Side.Anglosaxons)
                 {
-                    switch (GameManager.CurrentPhase)
+                    switch (MatchManager.CurrentPhase)
                     {
                         case 1:
                             if (MarkerRenderer.sprite == Markers[4])
@@ -71,7 +71,7 @@ namespace com.MKG.MB_NC
             Transform infoAndIcons = transform.GetChild(0).Find("InfoAndIcons");
             _turnIcon = infoAndIcons.GetChild(1).gameObject;
             for (int i = 2; i < infoAndIcons.childCount; i++) _shieldsIcons.Add(infoAndIcons.GetChild(i).gameObject);
-            GameManager.InfantryUnits.Add(this);
+            MatchManager.InfantryUnits.Add(this);
         }
         #endregion
     }

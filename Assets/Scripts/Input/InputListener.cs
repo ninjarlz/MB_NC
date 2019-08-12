@@ -52,36 +52,36 @@ namespace com.MKG.MB_NC
                 if ((Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began) ||
                         Input.GetMouseButtonDown(0))
                 {
-                    if (GameManager.Camera.SlidingThroughUnits) GameManager.Camera.ShowWinInstantly();
+                    if (MatchManager.Camera.SlidingThroughUnits) MatchManager.Camera.ShowWinInstantly();
                     else _ingameUI.OnQuitGameButton();
                 }
             }
             else if (!_ingameUI.InGameUIActive)
             {
-                if (GameManager.Camera.CurrentCameraState == HexMapCamera.CameraState.ShowingUnitsObligedToFight)
+                if (MatchManager.Camera.CurrentCameraState == HexMapCamera.CameraState.ShowingUnitsObligedToFight)
                 {
                     if ((Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began) ||
                         Input.GetMouseButtonDown(0))
-                        GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.Free;
+                        MatchManager.Camera.CurrentCameraState = HexMapCamera.CameraState.Free;
                 }
-                else if (GameManager.Camera.CurrentCameraState == HexMapCamera.CameraState.ShowingFights)
+                else if (MatchManager.Camera.CurrentCameraState == HexMapCamera.CameraState.ShowingFights)
                 {
                     if ((Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began) ||
                         Input.GetMouseButtonDown(0))
                     {
-                        if (GameManager.Camera.Index == GameManager.Camera.Units.Count)
+                        if (MatchManager.Camera.Index == MatchManager.Camera.Units.Count)
                         {
                             _ingameUI.TurnButton.enabled = true;
-                            GameManager.Camera.HideMarkersFromPreviousFight();
-                            GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.Free;
+                            MatchManager.Camera.HideMarkersFromPreviousFight();
+                            MatchManager.Camera.CurrentCameraState = HexMapCamera.CameraState.Free;
 
                         }
                         else
                         {
-                            if (GameManager.Camera.SlidingThroughUnits)
-                                GameManager.Camera.ShowNextFight();
+                            if (MatchManager.Camera.SlidingThroughUnits)
+                                MatchManager.Camera.ShowNextFight();
                             else
-                                GameManager.Camera.SlideToNextFight();
+                                MatchManager.Camera.SlideToNextFight();
                         }
                     }
                 }
@@ -115,14 +115,14 @@ namespace com.MKG.MB_NC
                                                 hex.Unit.UnitController.OnRightMouseDownEnemyFight();
                                                 break;
                                             default:
-                                                if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
+                                                if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
                                                 break;
                                         }
                                     }
-                                    else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
+                                    else if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
                                 }
                             }
-                            else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(null);
+                            else if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleRightClick(null);
                         }
 
                         if (Input.GetTouch(0).phase == TouchPhase.Ended)
@@ -153,14 +153,14 @@ namespace com.MKG.MB_NC
                                                     hex.Unit.UnitController.OnLeftMouseDownEnemyFightUncheck();
                                                     break;
                                                 default:
-                                                    if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
+                                                    if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
                                                     break;
                                             }
                                         }
-                                        else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
+                                        else if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
                                     }
                                 }
-                                else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(null);
+                                else if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleLeftClick(null);
                             }
                             _acumTime = 0;
                             _touchHeldProcessed = false;
@@ -179,7 +179,7 @@ namespace com.MKG.MB_NC
 
                                     if (_touchedHex)
                                     {
-                                        if (((_touchedHex.Unit && _touchedHex.Unit.Unlocked != 0) || (GameManager.CurrentlyChecked && _grid.ApproachableHexes.Contains(_touchedHex))))
+                                        if (((_touchedHex.Unit && _touchedHex.Unit.Unlocked != 0) || (MatchManager.CurrentlyChecked && _grid.ApproachableHexes.Contains(_touchedHex))))
                                             StartCoroutine(TouchDelay());
                                     }
                                 }
@@ -213,13 +213,13 @@ namespace com.MKG.MB_NC
                                             hex.Unit.UnitController.OnLeftMouseDownEnemyFightUncheck();
                                             break;
                                         default:
-                                            if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
+                                            if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
                                             break;
                                     }
                                 }
-                                else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
+                                else if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleLeftClick(hex);
                             }
-                            else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleLeftClick(null);
+                            else if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleLeftClick(null);
                         }
                         else if (Input.GetMouseButtonDown(1))
                         {
@@ -245,13 +245,13 @@ namespace com.MKG.MB_NC
                                             hex.Unit.UnitController.OnLeftMouseDownEnemyFightUncheck();
                                             break;
                                         default:
-                                            if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
+                                            if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
                                             break;
                                     }
                                 }
-                                else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
+                                else if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleRightClick(hex);
                             }
-                            else if (GameManager.CurrentlyChecked) GameManager.CurrentlyChecked.UnitController.HandleRightClick(null);
+                            else if (MatchManager.CurrentlyChecked) MatchManager.CurrentlyChecked.UnitController.HandleRightClick(null);
                         }
 
                         if (Input.GetKeyDown(KeyCode.Escape))

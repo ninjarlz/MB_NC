@@ -269,8 +269,8 @@ namespace com.MKG.MB_NC
             unit.Animator.Play("Take_damage");
             if (unit.ShouldDie)
             {
-                if (unit.Side == GameManager.Side.Northman) GameManager.VikingCounter--;
-                else GameManager.AngloSaxonCounter--;
+                if (unit.Side == MatchManager.Side.Northman) MatchManager.VikingCounter--;
+                else MatchManager.AngloSaxonCounter--;
                 unit.Animator.SetBool("Death" + Random.Range(1, 3).ToString(), true);
                 yield return new WaitForSeconds(1.6f);
                 unit.transform.GetChild(2).gameObject.SetActive(false);
@@ -282,8 +282,8 @@ namespace com.MKG.MB_NC
 
         public IEnumerator AttackingDie(UnitManager unit)
         {
-            if (unit.Side == GameManager.Side.Northman) GameManager.VikingCounter--;
-            else GameManager.AngloSaxonCounter--;
+            if (unit.Side == MatchManager.Side.Northman) MatchManager.VikingCounter--;
+            else MatchManager.AngloSaxonCounter--;
             yield return new WaitForSeconds(0.5f);
             unit.Animator.Play("Death" + Random.Range(1, 3).ToString());
             yield return new WaitForSeconds(1.4f);

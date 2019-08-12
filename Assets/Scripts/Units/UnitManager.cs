@@ -9,8 +9,8 @@ namespace com.MKG.MB_NC
 
         #region OtherUnitComponents
 
-        UnitMovement _unitMovement;
-        UnitController _unitController;
+        private UnitMovement _unitMovement;
+        private UnitController _unitController;
         public UnitController UnitController { get { return _unitController; } }
         public UnitMovement UnitMovement { get { return _unitMovement; } }
 
@@ -76,8 +76,8 @@ namespace com.MKG.MB_NC
         public GameObject InfoAndIcons { get; set; }
         public Vector3 OriginalInfoSize { get; set; }
         [SerializeField]
-        protected GameManager.Side _side;
-        public GameManager.Side Side { get { return _side; } }
+        protected MatchManager.Side _side;
+        public MatchManager.Side Side { get { return _side; } }
 
         [SerializeField]
         protected int _power;
@@ -151,7 +151,7 @@ namespace com.MKG.MB_NC
                 if (value) MarkerRenderer.sprite = Markers[0];
                 else
                 {
-                    if (GameManager.CurrentPhase == 1 || GameManager.CurrentPhase == 3)
+                    if (MatchManager.CurrentPhase == 1 || MatchManager.CurrentPhase == 3)
                     {
                         if (AttackedEnemies.Count > 0) MarkerRenderer.sprite = Markers[2];
                         else MarkerRenderer.sprite = Markers[3];
@@ -188,9 +188,9 @@ namespace com.MKG.MB_NC
             AttackedEnemies = new List<UnitManager>();
             AvailableEnemies = new List<UnitManager>();
             Grid = GameObject.Find("Game").GetComponentInChildren<HexGrid>();
-            GameManager.Units.Add(this);
-            if (Side == GameManager.Side.Northman) GameManager.UnitsFirstSide.Add(this);
-            else GameManager.UnitsSecondSide.Add(this);
+            MatchManager.Units.Add(this);
+            if (Side == MatchManager.Side.Northman) MatchManager.UnitsFirstSide.Add(this);
+            else MatchManager.UnitsSecondSide.Add(this);
             _currentStateDelegate = Idle;
             Animator = GetComponentInChildren<Animator>();
             _model = transform.GetChild(2).gameObject;
@@ -204,7 +204,7 @@ namespace com.MKG.MB_NC
             InfoText = InfoAndIcons.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
             OriginalInfoSize = InfoAndIcons.transform.localScale;
             SetUnitInfoText();
-            if (Side == GameManager.Side.Northman) InfoText.color = new Color(253f / 255, 194f / 255, 194f / 255);
+            if (Side == MatchManager.Side.Northman) InfoText.color = new Color(253f / 255, 194f / 255, 194f / 255);
             else InfoText.color = new Color(115f / 255, 231f / 255, 241f / 255);
             _marker = transform.GetChild(1).gameObject;
             MarkerRenderer = _marker.GetComponent<SpriteRenderer>();
@@ -247,9 +247,6 @@ namespace com.MKG.MB_NC
         }
 
         #endregion
-
-
-
 
         #region StateFuncs
 
@@ -301,7 +298,7 @@ namespace com.MKG.MB_NC
 
         public void SetUnitInfoText()
         {
-            InfoText.text = Name[0].ToString() + (Side == GameManager.Side.Northman ? ".N" : ".E") + "\n" + Power + "-" + Mobility;
+            InfoText.text = Name[0].ToString() + (Side == MatchManager.Side.Northman ? ".N" : ".E") + "\n" + Power + "-" + Mobility;
         }
 
         public void SetUnitBarText()

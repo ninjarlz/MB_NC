@@ -60,7 +60,7 @@ namespace com.MKG.MB_NC
                 _winDescription.text = "Player " + (player ? "1" : "2") + " has won\nby capturing enemy camp.";
             }
             WinStatementActive = true;
-            GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingWin;
+            MatchManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingWin;
         }
 
         public override void Awake()
@@ -75,27 +75,27 @@ namespace com.MKG.MB_NC
             UnitManager tempCurrentlyChecked;
             if (!InGameUIActive && !WinStatementActive)
             {
-                switch (GameManager.CurrentPhase)
+                switch (MatchManager.CurrentPhase)
                 {
                     case 0:
 
-                        if (GameManager.CurrentlyChecked)
+                        if (MatchManager.CurrentlyChecked)
                         {
-                            GameManager.CurrentlyChecked.IsChecked = false;
-                            GameManager.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
+                            MatchManager.CurrentlyChecked.IsChecked = false;
+                            MatchManager.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
                             _grid.HideApproachables();
-                            if (GameManager.CurrentlyChecked.CurrentState != UnitManager.State.Idle) GameManager.CurrentlyChecked.UnitMovement.RewindMovement();
-                            GameManager.CurrentlyChecked = null;
+                            if (MatchManager.CurrentlyChecked.CurrentState != UnitManager.State.Idle) MatchManager.CurrentlyChecked.UnitMovement.RewindMovement();
+                            MatchManager.CurrentlyChecked = null;
 
                         }
 
-                        if (_grid.AngloSaxonsCamp.Unit && _grid.AngloSaxonsCamp.Unit.Side == GameManager.Side.Northman)
+                        if (_grid.AngloSaxonsCamp.Unit && _grid.AngloSaxonsCamp.Unit.Side == MatchManager.Side.Northman)
                         {
                             ShowWin(true, true);
                             return;
                         }
 
-                        foreach (UnitManager unit in GameManager.UnitsFirstSide)
+                        foreach (UnitManager unit in MatchManager.UnitsFirstSide)
                         {
                             if (unit.CurrentHex)
                             {
@@ -110,10 +110,10 @@ namespace com.MKG.MB_NC
                                             if (!unit.HasEnemies())
                                             {
                                                 unit.MarkerRenderer.sprite = unit.Markers[3];
-                                                GameManager.UnitsWithEnemies.Add(unit);
+                                                MatchManager.UnitsWithEnemies.Add(unit);
                                             }
-                                            if (!GameManager.EnemiesInControlZone.Contains(neighbor.Unit))
-                                                GameManager.EnemiesInControlZone.Add(neighbor.Unit);
+                                            if (!MatchManager.EnemiesInControlZone.Contains(neighbor.Unit))
+                                                MatchManager.EnemiesInControlZone.Add(neighbor.Unit);
                                             unit.AvailableEnemies.Add(neighbor.Unit);
                                             if (neighbor.Unit.MarkerRenderer.sprite == null)
                                                 neighbor.Unit.MarkerRenderer.sprite = neighbor.Unit.Markers[5];
@@ -123,84 +123,84 @@ namespace com.MKG.MB_NC
                             }
                         }
 
-                        GameManager.CurrentPhase = 1;
-                        GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
+                        MatchManager.CurrentPhase = 1;
+                        MatchManager.CurrentPhaseText.text = MatchManager.Phases[MatchManager.CurrentPhase];
 
                         break;
 
                     case 1:
 
-                        tempCurrentlyChecked = GameManager.CurrentlyChecked;
-                        if (GameManager.CurrentlyChecked)
+                        tempCurrentlyChecked = MatchManager.CurrentlyChecked;
+                        if (MatchManager.CurrentlyChecked)
                         {
-                            GameManager.CurrentlyChecked.IsChecked = false;
-                            GameManager.CurrentlyChecked = null;
+                            MatchManager.CurrentlyChecked.IsChecked = false;
+                            MatchManager.CurrentlyChecked = null;
                         }
-                        if (GameManager.UnitsWithEnemies.Count != 0)
+                        if (MatchManager.UnitsWithEnemies.Count != 0)
                         {
-                            foreach (UnitManager unit in GameManager.UnitsWithEnemies)
+                            foreach (UnitManager unit in MatchManager.UnitsWithEnemies)
                             {
                                 if (unit.AttackedEnemies.Count == 0)
                                 {
-                                    GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
+                                    MatchManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
                                     TurnButton.enabled = false;
                                     return;
                                 }
                             }
-                            foreach (UnitManager enemy in GameManager.EnemiesInControlZone)
+                            foreach (UnitManager enemy in MatchManager.EnemiesInControlZone)
                             {
                                 if (enemy.AttackingEnemies.Count == 0)
                                 {
-                                    GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;//ShowingUnitsObligedToFight = true;
+                                    MatchManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;//ShowingUnitsObligedToFight = true;
                                     TurnButton.enabled = false;
                                     return;
                                 }
                             }
 
-                            foreach (UnitManager unit in GameManager.UnitsWithEnemies)
+                            foreach (UnitManager unit in MatchManager.UnitsWithEnemies)
                             {
                                 unit.MarkerRenderer.sprite = null;
                                 if (tempCurrentlyChecked) foreach (UnitManager enemy in tempCurrentlyChecked.AttackedEnemies)
                                         enemy.MarkerRenderer.sprite = null;
                                 if (unit.AttackedEnemies.Count == 1 && unit.AttackedEnemies[0].AttackingEnemies.Count > 1) // JESLI PARTYCYPUJE W ATAKU KILKU NA JEDNEGO
                                 {
-                                    if (!GameManager.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
-                                        GameManager.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
+                                    if (!MatchManager.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
+                                        MatchManager.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
                                 }
                                 else
-                                    GameManager.UnitsAttackingManyOrOne.Add(unit);
+                                    MatchManager.UnitsAttackingManyOrOne.Add(unit);
                             }
-                            GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingFights;
+                            MatchManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingFights;
                             TurnButton.enabled = false;
                         }
                         else
                         {
-                            foreach (InfantryUnitManager unit in GameManager.InfantryUnits)
+                            foreach (InfantryUnitManager unit in MatchManager.InfantryUnits)
                                 if (!unit.ShowTurnIcon) unit.ShowTurnIcon = true;
-                            GameManager.CurrentPhase = 2;
-                            GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
+                            MatchManager.CurrentPhase = 2;
+                            MatchManager.CurrentPhaseText.text = MatchManager.Phases[MatchManager.CurrentPhase];
                         }
 
                         break;
 
                     case 2:
 
-                        if (GameManager.CurrentlyChecked)
+                        if (MatchManager.CurrentlyChecked)
                         {
-                            GameManager.CurrentlyChecked.IsChecked = false;
-                            GameManager.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
+                            MatchManager.CurrentlyChecked.IsChecked = false;
+                            MatchManager.CurrentlyChecked.CurrentHex.TurnOffArrowsRenderers();
                             _grid.HideApproachables();
-                            if (GameManager.CurrentlyChecked.CurrentState != UnitManager.State.Idle) GameManager.CurrentlyChecked.UnitMovement.RewindMovement();
-                            GameManager.CurrentlyChecked = null;
+                            if (MatchManager.CurrentlyChecked.CurrentState != UnitManager.State.Idle) MatchManager.CurrentlyChecked.UnitMovement.RewindMovement();
+                            MatchManager.CurrentlyChecked = null;
                         }
 
-                        if (_grid.VikingsCamp.Unit && _grid.VikingsCamp.Unit.Side == GameManager.Side.Anglosaxons)
+                        if (_grid.VikingsCamp.Unit && _grid.VikingsCamp.Unit.Side == MatchManager.Side.Anglosaxons)
                         {
                             ShowWin(true, false);
                             return;
                         }
 
-                        foreach (UnitManager unit in GameManager.UnitsSecondSide)
+                        foreach (UnitManager unit in MatchManager.UnitsSecondSide)
                         {
                             if (unit.CurrentHex)
                             {
@@ -215,10 +215,10 @@ namespace com.MKG.MB_NC
                                             if (!unit.HasEnemies())
                                             {
                                                 unit.MarkerRenderer.sprite = unit.Markers[3];
-                                                GameManager.UnitsWithEnemies.Add(unit);
+                                                MatchManager.UnitsWithEnemies.Add(unit);
                                             }
-                                            if (!GameManager.EnemiesInControlZone.Contains(neighbor.Unit))
-                                                GameManager.EnemiesInControlZone.Add(neighbor.Unit);
+                                            if (!MatchManager.EnemiesInControlZone.Contains(neighbor.Unit))
+                                                MatchManager.EnemiesInControlZone.Add(neighbor.Unit);
                                             unit.AvailableEnemies.Add(neighbor.Unit);
                                             if (neighbor.Unit.MarkerRenderer.sprite == null)
                                                 neighbor.Unit.MarkerRenderer.sprite = neighbor.Unit.Markers[5];
@@ -228,76 +228,76 @@ namespace com.MKG.MB_NC
                             }
                         }
 
-                        GameManager.CurrentPhase = 3;
-                        GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
+                        MatchManager.CurrentPhase = 3;
+                        MatchManager.CurrentPhaseText.text = MatchManager.Phases[MatchManager.CurrentPhase];
 
                         break;
 
                     case 3:
 
-                        tempCurrentlyChecked = GameManager.CurrentlyChecked;
-                        if (GameManager.CurrentlyChecked)
-                            if (GameManager.CurrentlyChecked)
+                        tempCurrentlyChecked = MatchManager.CurrentlyChecked;
+                        if (MatchManager.CurrentlyChecked)
+                            if (MatchManager.CurrentlyChecked)
                             {
-                                GameManager.CurrentlyChecked.IsChecked = false;
-                                GameManager.CurrentlyChecked = null;
+                                MatchManager.CurrentlyChecked.IsChecked = false;
+                                MatchManager.CurrentlyChecked = null;
                             }
-                        if (GameManager.UnitsWithEnemies.Count != 0)
+                        if (MatchManager.UnitsWithEnemies.Count != 0)
                         {
-                            foreach (UnitManager unit in GameManager.UnitsWithEnemies)
+                            foreach (UnitManager unit in MatchManager.UnitsWithEnemies)
                             {
                                 if (unit.AttackedEnemies.Count == 0)
                                 {
-                                    GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
+                                    MatchManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
                                     TurnButton.enabled = false;
                                     return;
                                 }
                             }
-                            foreach (UnitManager enemy in GameManager.EnemiesInControlZone)
+                            foreach (UnitManager enemy in MatchManager.EnemiesInControlZone)
                             {
                                 if (enemy.AttackingEnemies.Count == 0)
                                 {
-                                    GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
+                                    MatchManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingUnitsObligedToFight;
                                     TurnButton.enabled = false;
                                     return;
                                 }
                             }
 
-                            foreach (UnitManager unit in GameManager.UnitsWithEnemies)
+                            foreach (UnitManager unit in MatchManager.UnitsWithEnemies)
                             {
                                 unit.MarkerRenderer.sprite = null;
                                 if (tempCurrentlyChecked) foreach (UnitManager enemy in tempCurrentlyChecked.AttackedEnemies)
                                         enemy.MarkerRenderer.sprite = null;
                                 if (unit.AttackedEnemies.Count == 1 && unit.AttackedEnemies[0].AttackingEnemies.Count > 1) // JESLI PARTYCYPUJE W ATAKU KILKU NA JEDNEGO
                                 {
-                                    if (!GameManager.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
-                                        GameManager.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
+                                    if (!MatchManager.EnemyUnitsAttackedByMany.Contains(unit.AttackedEnemies[0]))
+                                        MatchManager.EnemyUnitsAttackedByMany.Add(unit.AttackedEnemies[0]);
                                 }
                                 else
-                                    GameManager.UnitsAttackingManyOrOne.Add(unit);
+                                    MatchManager.UnitsAttackingManyOrOne.Add(unit);
                             }
-                            GameManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingFights;
+                            MatchManager.Camera.CurrentCameraState = HexMapCamera.CameraState.ShowingFights;
                             TurnButton.enabled = false;
                         }
                         else
                         {
-                            if (GameManager.CurrentTurn == 30)
+                            if (MatchManager.CurrentTurn == 30)
                             {
                                 ShowWin(false, false);
                                 return;
                             }
-                            GameManager.CurrentTurnText.text = "Turn:  " + (++GameManager.CurrentTurn).ToString() + "/30";
-                            foreach (UnitManager unit in GameManager.Units)
+                            MatchManager.CurrentTurnText.text = "Turn:  " + (++MatchManager.CurrentTurn).ToString() + "/30";
+                            foreach (UnitManager unit in MatchManager.Units)
                             {
                                 unit.Mobility = unit.MaxMobility;
                                 unit.SetUnitInfoText();
                                 unit.SetUnitBarText();
                                 unit.AvailableEnemies.Clear();
                             }
-                            foreach (InfantryUnitManager unit in GameManager.InfantryUnits)
+                            foreach (InfantryUnitManager unit in MatchManager.InfantryUnits)
                                 if (!unit.ShowTurnIcon) unit.ShowTurnIcon = true;
-                            GameManager.CurrentPhase = 0;
-                            GameManager.CurrentPhaseText.text = GameManager.Phases[GameManager.CurrentPhase];
+                            MatchManager.CurrentPhase = 0;
+                            MatchManager.CurrentPhaseText.text = MatchManager.Phases[MatchManager.CurrentPhase];
                         }
 
                         break;

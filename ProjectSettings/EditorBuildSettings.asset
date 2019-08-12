@@ -8,7 +8,7 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Main Menu.unity
     guid: 4dd8a803086e5ba4ca468dc8a5d20711
   - enabled: 0
@@ -17,7 +17,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Test Map.unity
     guid: 94c17113ada3f1546bca2cc48708a6ba
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Fulford.unity
     guid: 586ef569838a4ee42ac286223862716a
   - enabled: 0
@@ -26,7 +26,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Fulford Online.unity
     guid: 023fcecf6ba00414880a7256997eb025
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Launcher.unity
     guid: bf1e0110f4b72a54a803bb6e6b7720b3
+  - enabled: 0
+    path: Assets/Scenes/MainScene.unity
+    guid: 6856591ab117b0249880e409c395d53d
   m_configObjects: {}

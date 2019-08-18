@@ -158,7 +158,7 @@ PlayerSettings:
     Android: com.MKG.MB_NC
   buildNumber: {}
   AndroidBundleVersionCode: 1
-  AndroidMinSdkVersion: 27
+  AndroidMinSdkVersion: 24
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
   aotOptions: 

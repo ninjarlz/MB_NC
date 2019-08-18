@@ -469,15 +469,19 @@ namespace com.MKG.MB_NC
 
         void OnEnable()
         {
-            if (QualitySettings.GetQualityLevel() == 0)
+            if (QualitySettings.GetQualityLevel() < 2)
             {
                 _postProcessingBehaviour.profile = _lowProfile;
-                _light.GetComponent<Light>().intensity = 1.65f;
+                _light.GetComponent<Light>().intensity = 1.45f;
+                if (QualitySettings.GetQualityLevel() == 0)
+                    _cameraObject.GetComponent<Camera>().allowHDR = false;
+                else _cameraObject.GetComponent<Camera>().allowHDR = true;
             }
             else
             {
                 _postProcessingBehaviour.profile = _midProfile;
                 _light.GetComponent<Light>().intensity = 1.65f;
+                _cameraObject.GetComponent<Camera>().allowHDR = true;
             }
         }
 

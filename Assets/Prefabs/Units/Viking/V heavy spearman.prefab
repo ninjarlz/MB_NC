@@ -52,10 +52,12 @@ GameObject:
   m_Component:
   - component: {fileID: 4323412137895430}
   - component: {fileID: 136324923124215844}
-  - component: {fileID: 114650414912827838}
   - component: {fileID: 54199184800898240}
   - component: {fileID: 82545967149940702}
   - component: {fileID: 95859167024259086}
+  - component: {fileID: 114134513710865450}
+  - component: {fileID: 114264894280319666}
+  - component: {fileID: 114837072956786990}
   m_Layer: 0
   m_Name: V heavy spearman
   m_TagString: Untagged
@@ -1726,7 +1728,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1033451806742992}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 2.99, z: 0}
   m_LocalScale: {x: 7, y: 7, z: 7}
   m_Children:
   - {fileID: 224940919946653894}
@@ -3536,7 +3538,7 @@ MonoBehaviour:
   - {fileID: 0}
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &114650414912827838
+--- !u!114 &114134513710865450
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3544,10 +3546,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1033451806742992}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a4df03e7fff1524b99ba6840ea50d4b, type: 3}
+  m_Script: {fileID: 11500000, guid: bfe18ba4f9c016842a9506aa8f4a80ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _name: 1. H. Spear.
+  _name: '1. H. Spear. '
   _moveSpeed: 30
   _rotationSpeed: 80
   _currentState: 3
@@ -3559,20 +3561,26 @@ MonoBehaviour:
   - {fileID: 21300000, guid: ba7fb33a8ef8aea4ab2bbbda3631eb39, type: 3}
   - {fileID: 21300000, guid: 6dcce8ebdea3a8942822ef77d2c2a32f, type: 3}
   - {fileID: 21300000, guid: 9a006cbb99859d84183c757be10e8d4c, type: 3}
-  _side: 1
+  _side: 0
   _power: 2
   _tPower: 1
-  _condition: 1
-  _isBlockedByEnemyControlZone: 0
+  _currentCondition: 0
   _canvasUI: {fileID: 0}
-  _shieldsIcons:
-  - {fileID: 1655707024363684}
-  - {fileID: 1925359334773696}
   _mobility: 5
   _maxMobility: 5
   _isChecked: 0
   _currentHex: {fileID: 0}
-  _turnIcon: {fileID: 1751397060145620}
+--- !u!114 &114264894280319666
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1033451806742992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d113597413b3d284680af47c9f9f808b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114812769215244890
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3594,6 +3602,18 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 100
+--- !u!114 &114837072956786990
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1033451806742992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4658029114e9684ea4d3628f1b8394b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isBlockedByEnemyControlZone: 0
 --- !u!136 &136324923124215844
 CapsuleCollider:
   m_ObjectHideFlags: 1

@@ -84,10 +84,12 @@ GameObject:
   m_Component:
   - component: {fileID: 4651572426427034}
   - component: {fileID: 136349087032157548}
-  - component: {fileID: 114190329919395180}
   - component: {fileID: 54723767741159158}
   - component: {fileID: 82206089572647914}
   - component: {fileID: 95564834030805588}
+  - component: {fileID: 114019484943055968}
+  - component: {fileID: 114405224832350728}
+  - component: {fileID: 114415389978622984}
   m_Layer: 0
   m_Name: V light spearman
   m_TagString: Untagged
@@ -2087,7 +2089,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1058227858863934}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 2.99, z: 0}
   m_LocalScale: {x: 7, y: 7, z: 7}
   m_Children:
   - {fileID: 224014588903264578}
@@ -3423,7 +3425,7 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &114190329919395180
+--- !u!114 &114019484943055968
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3431,7 +3433,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1058227858863934}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a4df03e7fff1524b99ba6840ea50d4b, type: 3}
+  m_Script: {fileID: 11500000, guid: bfe18ba4f9c016842a9506aa8f4a80ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _name: 1. L. Spear.
@@ -3446,20 +3448,15 @@ MonoBehaviour:
   - {fileID: 21300000, guid: ba7fb33a8ef8aea4ab2bbbda3631eb39, type: 3}
   - {fileID: 21300000, guid: 6dcce8ebdea3a8942822ef77d2c2a32f, type: 3}
   - {fileID: 21300000, guid: 9a006cbb99859d84183c757be10e8d4c, type: 3}
-  _side: 1
+  _side: 0
   _power: 1
   _tPower: 1
-  _condition: 1
-  _isBlockedByEnemyControlZone: 0
+  _currentCondition: 0
   _canvasUI: {fileID: 0}
-  _shieldsIcons:
-  - {fileID: 1690390280190586}
-  - {fileID: 1075657575747496}
   _mobility: 6
   _maxMobility: 6
   _isChecked: 0
   _currentHex: {fileID: 0}
-  _turnIcon: {fileID: 1566144007191312}
 --- !u!114 &114256854292139608
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3573,6 +3570,29 @@ MonoBehaviour:
   - {fileID: 0}
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &114405224832350728
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1058227858863934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d113597413b3d284680af47c9f9f808b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &114415389978622984
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1058227858863934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4658029114e9684ea4d3628f1b8394b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isBlockedByEnemyControlZone: 0
 --- !u!114 &114584186337386580
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -2,27 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-[ExecuteInEditMode]
-public class TreeShadowEmitter : MonoBehaviour {
-
-    public bool Active = false;
-
-    
-	void Awake ()
+namespace com.MKG.MB_NC
+{
+    [ExecuteInEditMode]
+    public class TreeShadowEmitter : MonoBehaviour
     {
-	    for (int i = 0; i < transform.childCount; i++)
+
+        public bool Active = false;
+
+
+        void Awake()
         {
-            Transform forest = transform.GetChild(i);
-            for (int j = 0; j < forest.childCount; j++)
+            for (int i = 0; i < transform.childCount; i++)
             {
-                Transform tree = forest.GetChild(j);
-                for (int k = 0; k < tree.childCount; k++)
+                Transform forest = transform.GetChild(i);
+                for (int j = 0; j < forest.childCount; j++)
                 {
-                    tree.GetChild(k).gameObject.SetActive(Active);
+                    Transform tree = forest.GetChild(j);
+                    for (int k = 0; k < tree.childCount; k++)
+                    {
+                        tree.GetChild(k).gameObject.SetActive(Active);
+                    }
                 }
-            }       
+            }
         }
-	}
-	
+
+    }
 }

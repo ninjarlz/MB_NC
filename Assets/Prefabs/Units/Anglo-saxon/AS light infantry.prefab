@@ -225,10 +225,12 @@ GameObject:
   m_Component:
   - component: {fileID: 4463640052559452}
   - component: {fileID: 136203210837256584}
-  - component: {fileID: 114567753231208614}
   - component: {fileID: 54007749510827288}
   - component: {fileID: 82295053332476830}
   - component: {fileID: 95693885572484448}
+  - component: {fileID: 114780248965884020}
+  - component: {fileID: 114945537686711242}
+  - component: {fileID: 114185934375807644}
   m_Layer: 0
   m_Name: AS light infantry
   m_TagString: Untagged
@@ -1709,7 +1711,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1182282744147478}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 2.99, z: 0}
   m_LocalScale: {x: 7, y: 7, z: 7}
   m_Children:
   - {fileID: 224736906862095176}
@@ -3201,7 +3203,7 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &114567753231208614
+--- !u!114 &114185934375807644
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3209,7 +3211,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 1182282744147478}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a4df03e7fff1524b99ba6840ea50d4b, type: 3}
+  m_Script: {fileID: 11500000, guid: a4658029114e9684ea4d3628f1b8394b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isBlockedByEnemyControlZone: 0
+--- !u!114 &114780248965884020
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1182282744147478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe18ba4f9c016842a9506aa8f4a80ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _name: 1. L. Inf.
@@ -3224,19 +3238,15 @@ MonoBehaviour:
   - {fileID: 21300000, guid: ba7fb33a8ef8aea4ab2bbbda3631eb39, type: 3}
   - {fileID: 21300000, guid: 6dcce8ebdea3a8942822ef77d2c2a32f, type: 3}
   - {fileID: 21300000, guid: 9a006cbb99859d84183c757be10e8d4c, type: 3}
-  _side: 0
+  _side: 1
   _power: 1
   _tPower: 1
-  _condition: 1
-  _isBlockedByEnemyControlZone: 0
+  _currentCondition: 0
   _canvasUI: {fileID: 0}
-  _shieldsIcons:
-  - {fileID: 1567188670147324}
   _mobility: 6
   _maxMobility: 6
   _isChecked: 0
   _currentHex: {fileID: 0}
-  _turnIcon: {fileID: 1927345638402528}
 --- !u!114 &114832815000580060
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3350,6 +3360,17 @@ MonoBehaviour:
   - {fileID: 0}
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &114945537686711242
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1182282744147478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d113597413b3d284680af47c9f9f808b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114962708834357200
 MonoBehaviour:
   m_ObjectHideFlags: 1

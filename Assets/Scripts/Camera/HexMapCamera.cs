@@ -523,7 +523,7 @@ namespace com.MKG.MB_NC
         void AdjustZoom(float delta)
         {
             _zoom = Mathf.Clamp01(_zoom + delta);
-
+            
             float distance = Mathf.Lerp(_stickMinZoom, _stickMaxZoom, _zoom);
             _stick.localPosition = new Vector3(0f, 0f, distance);
 
@@ -536,7 +536,7 @@ namespace com.MKG.MB_NC
                 float textScale = Mathf.Lerp(unit.OriginalInfoSize.x, 0.25f, _zoom);
                 unit.InfoAndIcons.transform.localScale = new Vector3(textScale, textScale, unit.OriginalInfoSize.z);
             }
-            foreach (Hex hex in _hexes) foreach (SpriteRenderer renderer in hex.ArrowRenderers) renderer.transform.localScale = Vector3.Lerp(Vector3.one, new Vector3(0.85f, 0.85f, 0.85f), _zoom);
+            //foreach (Hex hex in _hexes) foreach (SpriteRenderer renderer in hex.ArrowRenderers) renderer.transform.localScale = Vector3.Lerp(Vector3.one, new Vector3(0.85f, 0.85f, 0.85f), _zoom);
         }
 
         void AdjustPositionMouse(float xDelta, float zDelta)

@@ -1,21 +1,20 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-/*using Photon.Pun;
+using Photon.Pun;
 using Photon.Realtime;
 using Firebase;
 using Firebase.Auth;
 using System.Threading.Tasks;
 using Google;
-using TMPro;
-using System.Collections.Generic;
 using UnityEngine.Networking;
-using System.Collections;*/
+using System.Collections;
+using TMPro;
 
 namespace com.MKG.MB_NC
 {
-    public class GameManager //: MonoBehaviourPunCallbacks
+    public class GameManager : MonoBehaviourPunCallbacks
     {
-      /*  public static GameManager Instance;
+        public static GameManager Instance;
         public static MatchManager CurrentMatch { get; set; }
         private const string _gameVersion = "1";
         [SerializeField]
@@ -28,7 +27,7 @@ namespace com.MKG.MB_NC
         [SerializeField]
         private Button _connectButton;
         [SerializeField]
-        private Text _userName;
+        private TextMeshProUGUI _userName;
         [SerializeField]
         private Image _userImage;
          
@@ -169,6 +168,6 @@ namespace com.MKG.MB_NC
                 _userImage.sprite = image;
                 _userImage.transform.parent.gameObject.SetActive(true);
             }
-        }*/
+        }
     }
 }

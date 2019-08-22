@@ -156,6 +156,7 @@ namespace com.MKG.MB_NC
                     arrowRenderer.transform.parent = transform;
                     arrowRenderer.transform.position = transform.position + new Vector3(0f, 5.8f, 0f);
                     arrowRenderer.transform.rotation = Quaternion.Euler(new Vector3(90f, i * 60f, 0f));
+                    arrowRenderer.transform.localScale *= 0.925f;
                     ArrowRenderers[i] = arrowRenderer.AddComponent<SpriteRenderer>();
                     ArrowRenderers[i].sortingOrder = 2;
 
@@ -187,6 +188,7 @@ namespace com.MKG.MB_NC
                             arrowRenderer.transform.parent = transform;
                             arrowRenderer.transform.position = transform.position + new Vector3(0f, 3.8f, 0f);
                             arrowRenderer.transform.rotation = Quaternion.Euler(new Vector3(90f, i * 60f, 0f));
+                            arrowRenderer.transform.localScale *= 0.925f;
                             ArrowRenderers[i] = arrowRenderer.AddComponent<SpriteRenderer>();
                             ArrowRenderers[i].sortingOrder = 2;
 
@@ -201,6 +203,7 @@ namespace com.MKG.MB_NC
                             arrowRenderer.transform.parent = transform;
                             arrowRenderer.transform.position = transform.position + new Vector3(0f, 0.5f, 0f);
                             arrowRenderer.transform.rotation = Quaternion.Euler(new Vector3(90f, i * 60f, 0f));
+                            arrowRenderer.transform.localScale *= 0.925f;
                             ArrowRenderers[i] = arrowRenderer.AddComponent<SpriteRenderer>();
                         }
                     }
@@ -215,6 +218,7 @@ namespace com.MKG.MB_NC
                         arrowRenderer.transform.parent = transform;
                         arrowRenderer.transform.position = transform.position + new Vector3(0f, 0.5f, 0f);
                         arrowRenderer.transform.rotation = Quaternion.Euler(new Vector3(90f, i * 60f, 0f));
+                        arrowRenderer.transform.localScale *= 0.925f;
                         ArrowRenderers[i] = arrowRenderer.AddComponent<SpriteRenderer>();
                     }
                 }

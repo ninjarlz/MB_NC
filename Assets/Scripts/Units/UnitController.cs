@@ -34,6 +34,7 @@ namespace com.MKG.MB_NC
 
         public virtual void HandleLeftClick(Hex hex)
         {
+            Debug.Log("OOOO");
             if (_unitManager.CurrentState == UnitManager.State.Idle)
             {
                 _click.Play();

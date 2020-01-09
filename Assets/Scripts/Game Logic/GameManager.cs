@@ -151,7 +151,7 @@ namespace com.MKG.MB_NC
         {
             GoogleSignIn.DefaultInstance.SignOut();
             _userName.text = "-";
-            _userImage.transform.parent.gameObject.SetActive(false);
+            _userImage.gameObject.SetActive(false);
         }
 
 
@@ -166,7 +166,7 @@ namespace com.MKG.MB_NC
                 Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
                 Sprite image = Sprite.Create(texture, new Rect(Vector2.zero, new Vector2(texture.width, texture.height)), Vector2.zero);
                 _userImage.sprite = image;
-                _userImage.transform.parent.gameObject.SetActive(true);
+                _userImage.gameObject.SetActive(true);
             }
         }
     }

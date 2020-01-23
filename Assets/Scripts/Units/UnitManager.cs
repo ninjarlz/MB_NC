@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.Rendering;
 
 namespace com.MKG.MB_NC
 {
@@ -48,6 +50,9 @@ namespace com.MKG.MB_NC
                         break;
                     case State.Rotating:
                         _currentStateDelegate = Rotating;
+                        break;
+                    case State.Dissolving:
+                        _currentStateDelegate = Dissolving;
                         break;
                 }
                 _currentState = value;
@@ -112,7 +117,7 @@ namespace com.MKG.MB_NC
         public List<GameObject> ShieldsIcons { get { return _shieldsIcons; } set { _shieldsIcons = value; } }
         public bool HasEnemies()
         {
-            return AvailableEnemies.Count > 0 ? true : false;
+            return AvailableEnemies.Count > 0;
         }
 
         public virtual bool ShowTurnIcon { get; set; }
@@ -138,7 +143,7 @@ namespace com.MKG.MB_NC
 
         public abstract int Unlocked { get; }
 
-        public enum State { Rotating, Moving, Fighting, Idle }
+        public enum State { Rotating, Moving, Dissolving, Idle }
 
         [SerializeField]
         protected bool _isChecked;
@@ -178,6 +183,11 @@ namespace com.MKG.MB_NC
                 }
             }
         }
+
+        private List<Material> _materialsToDissolve = new List<Material>();
+        private List<Renderer> _meshRenderes = new List<Renderer>();
+        private float _dissolveAmount = 0f;
+        
         #endregion
 
         #region UnityFuncs - Start, Update...
@@ -217,6 +227,30 @@ namespace com.MKG.MB_NC
 
             _unitMovement.Setup(this);
             _unitController.Setup(this, _unitMovement);
+
+            Transform models = transform.GetChild(2);
+            foreach (Transform children in models.GetChild(0))
+            {
+                Renderer[] renderers = children.GetComponentsInChildren<Renderer>();
+                foreach (Renderer renderer in renderers)
+                {
+                    if (renderer.gameObject.activeSelf)
+                    {
+                        _meshRenderes.Add(renderer);
+                        _materialsToDissolve.Add(renderer.material);
+                    }
+                }
+            }
+            for (int i = 1; i < models.childCount; i++)
+            {
+                Transform model = models.GetChild(i);
+                if (model.gameObject.activeSelf)
+                {
+                    Renderer renderer = model.GetComponent<Renderer>();
+                    _meshRenderes.Add(renderer);
+                    _materialsToDissolve.Add(renderer.material);
+                }
+            }
         }
 
         void Update()
@@ -227,7 +261,7 @@ namespace com.MKG.MB_NC
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.tag == "Tree")
+            if (other.tag.Equals("Tree"))
             {
                 Transform lodGroup = other.transform.GetChild(0);
                 lodGroup.GetChild(0).GetComponent<MeshRenderer>().enabled = false;
@@ -281,13 +315,61 @@ namespace com.MKG.MB_NC
 
         public void Idle() { }
 
+        public void Dissolving()
+        {
+            
+            _dissolveAmount += Time.deltaTime / 2.25f;
+            foreach (Material material in _materialsToDissolve) 
+                material.SetFloat("_DissolveAmount", _dissolveAmount);
+            if (_dissolveAmount >= 1)
+                StartCoroutine(Deactivating());
+        }
+
         #endregion
 
         #region Additional Funcs
-        public void Deactivate()
+        private IEnumerator Deactivating()
         {
+            CurrentState = State.Idle; 
+            transform.GetChild(2).gameObject.SetActive(false);
+            transform.position = new Vector3(10000, 10000, 10000);
+            yield return new WaitForSeconds(0.1f);
             gameObject.SetActive(false);
+        }
+        
+        
+        public IEnumerator TakeDamageAnimationDelay()
+        {
+            yield return new WaitForSeconds(0.3f);
+            Animator.Play("Take_damage");
+            if (ShouldDie)
+            {
+                if (Side == MatchManager.Side.Northman) MatchManager.VikingCounter--;
+                else MatchManager.AngloSaxonCounter--;
+                Animator.SetBool("Death" + Random.Range(1, 3).ToString(), true);
+                yield return new WaitForSeconds(1.6f);
+                foreach (Renderer renderer in _meshRenderes)
+                    renderer.shadowCastingMode = ShadowCastingMode.Off;
+                MarkerRenderer.sprite = null;
+                CanvasInfo.SetActive(false);
+                CurrentHex = null;
+                CurrentState = State.Dissolving;
+            }
+        }
+
+        public IEnumerator AttackingDie()
+        {
+            if (Side == MatchManager.Side.Northman) MatchManager.VikingCounter--;
+            else MatchManager.AngloSaxonCounter--;
+            yield return new WaitForSeconds(0.5f);
+            Animator.Play("Death" + Random.Range(1, 3).ToString());
+            yield return new WaitForSeconds(1.4f);
+            foreach (Renderer renderer in _meshRenderes)
+                renderer.shadowCastingMode = ShadowCastingMode.Off;
+            MarkerRenderer.sprite = null;
+            CanvasInfo.SetActive(false);
             CurrentHex = null;
+            CurrentState = State.Dissolving;
         }
 
         public void SwitchState()

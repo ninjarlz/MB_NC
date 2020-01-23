@@ -30,6 +30,7 @@ namespace com.MKG.MB_NC
         private TextMeshProUGUI _userName;
         [SerializeField]
         private Image _userImage;
+       
          
         
         
@@ -48,6 +49,11 @@ namespace com.MKG.MB_NC
             }
         }
 
+        private void Update() {
+            //if (!IsOnline) {
+            //    EstablishConnection();
+            //}
+        }
         private void SetupFirebase()
         {
             _app = FirebaseApp.DefaultInstance;
@@ -88,6 +94,8 @@ namespace com.MKG.MB_NC
         public override void OnDisconnected(DisconnectCause cause)
         {
             Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason {0}", cause);
+            IsOnline = false;
+            SignOut();
         }
 
         public override void OnJoinRandomFailed(short returnCode, string message)

@@ -49,11 +49,11 @@ namespace com.MKG.MB_NC
             if (!IsCenteredOnEnemy)
             {
                 processedUnit.Animator.Play("Attack" + Random.Range(1, 3).ToString());
-                if (processedUnit.ShouldDie) StartCoroutine(AttackingDie(processedUnit));
+                if (processedUnit.ShouldDie) StartCoroutine(processedUnit.AttackingDie());
 
                 foreach (UnitManager enemy in processedUnit.AttackedEnemies)
                 {
-                    StartCoroutine(TakeDamageAnimationDelay(enemy));
+                    StartCoroutine(enemy.TakeDamageAnimationDelay());
                     enemy.SetUnitInfoText();
                 }
             }
@@ -62,10 +62,10 @@ namespace com.MKG.MB_NC
                 foreach (UnitManager unit in processedUnit.AttackingEnemies)
                 {
                     unit.Animator.Play("Attack" + Random.Range(1, 3).ToString());
-                    if (unit.ShouldDie) StartCoroutine(AttackingDie(unit));
+                    if (unit.ShouldDie) StartCoroutine(unit.AttackingDie());
                     unit.SetUnitInfoText();
                 }
-                StartCoroutine(TakeDamageAnimationDelay(processedUnit));
+                StartCoroutine(processedUnit.TakeDamageAnimationDelay());
             }
             processedUnit.AttackSound.Play();
         }
@@ -263,35 +263,7 @@ namespace com.MKG.MB_NC
             }
         }
 
-        public IEnumerator TakeDamageAnimationDelay(UnitManager unit)
-        {
-            yield return new WaitForSeconds(0.3f);
-            unit.Animator.Play("Take_damage");
-            if (unit.ShouldDie)
-            {
-                if (unit.Side == MatchManager.Side.Northman) MatchManager.VikingCounter--;
-                else MatchManager.AngloSaxonCounter--;
-                unit.Animator.SetBool("Death" + Random.Range(1, 3).ToString(), true);
-                yield return new WaitForSeconds(1.6f);
-                unit.transform.GetChild(2).gameObject.SetActive(false);
-                unit.transform.position = new Vector3(10000, 10000, 10000);
-                yield return new WaitForSeconds(0.1f);
-                unit.Deactivate();
-            }
-        }
-
-        public IEnumerator AttackingDie(UnitManager unit)
-        {
-            if (unit.Side == MatchManager.Side.Northman) MatchManager.VikingCounter--;
-            else MatchManager.AngloSaxonCounter--;
-            yield return new WaitForSeconds(0.5f);
-            unit.Animator.Play("Death" + Random.Range(1, 3).ToString());
-            yield return new WaitForSeconds(1.4f);
-            unit.transform.GetChild(2).gameObject.SetActive(false);
-            unit.transform.position = new Vector3(10000, 10000, 10000);
-            yield return new WaitForSeconds(0.1f);
-            unit.Deactivate();
-        }
+        
 
 
         public List<FightResult> GetFightResult(int protecionLevelDiff, int terrainDiff, int attackingPower, int defendingPower)

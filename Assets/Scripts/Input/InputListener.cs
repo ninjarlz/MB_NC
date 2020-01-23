@@ -186,7 +186,7 @@ namespace com.MKG.MB_NC
                             }
                         }
                     }
-                    // FOR DEBUG
+#if UNITY_EDITOR
                     else if (Input.touchCount == 0)
                     {
                         if (Input.GetMouseButtonDown(0))
@@ -256,13 +256,12 @@ namespace com.MKG.MB_NC
 
                         if (Input.GetKeyDown(KeyCode.Escape))
                         {
-#if UNITY_EDITOR
                             UnityEditor.EditorApplication.isPlaying = false;
-#endif
                             Application.Quit();
                         }
                         //else if (Input.GetKeyDown(KeyCode.Backspace)) SceneManager.LoadScene("Main Menu");
                     }
+#endif
                     else if (Input.touchCount > 1)
                     {
                         _touchedHex = null;

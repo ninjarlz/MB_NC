@@ -24,12 +24,16 @@ namespace com.MKG.MB_NC
         private Sprite[] _playButtonImages;
         [SerializeField]
         private GameObject _lockImage;
+        private GameManager _gameManager;
 
         public override void Awake()
         {
             base.Awake();
             _scenes = new List<string>() { "Fulford", "Stamford Bridge", "Hastings", "Test Map" };
 
+        }
+        public void Start() {
+            _gameManager = GameManager.Instance;
         }
 
         public void OnNewGameButton()
@@ -90,7 +94,8 @@ namespace com.MKG.MB_NC
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #endif
-            Application.Quit();
+            _gameManager.SignOut();
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
     }
 }

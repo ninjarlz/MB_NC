@@ -778,6 +778,59 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cecc253e40f897f418b540d6bfc757b7, type: 3}
+--- !u!1001 &913387695
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1055074715136876, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1055074715136876, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_Name
+      value: Test Audio Manager (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4824480915914454, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4824480915914454, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4824480915914454, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4824480915914454, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4824480915914454, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4824480915914454, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4824480915914454, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4824480915914454, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_RootOrder
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4544226718605036, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e7ddb2583f9af9d4db43b587c67dba8e, type: 3}
 --- !u!1001 &1550651145
 PrefabInstance:
   m_ObjectHideFlags: 0

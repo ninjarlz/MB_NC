@@ -9,6 +9,7 @@ using Google;
 using UnityEngine.Networking;
 using System.Collections;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 namespace com.MKG.MB_NC
 {
@@ -69,21 +70,51 @@ namespace com.MKG.MB_NC
                 IsOnline = true;
                 SetupFirebase();
                 Connect();
+                #if !UNITY_EDITOR
                 SignIn();
+                #endif
             }
         }
+
+        public void JoinOnlineDemo()
+        {
+            if (PhotonNetwork.IsConnected)
+            {
+                PhotonNetwork.JoinRandomRoom();
+            }
+        }
+        
+        
+        public override void OnLeftRoom()
+        {
+            SceneManager.LoadScene("Main Menu");
+        }
+
+        void LoadArena()
+        {
+            if (!PhotonNetwork.IsMasterClient)
+            {
+                Debug.LogError("PhotonNetwork : Trying to Load a level but we are not the master Client");
+            }
+            PhotonNetwork.LoadLevel("Fulford Online");
+        }
+       
+
+        public void LeaveRoom()
+        {
+            PhotonNetwork.LeaveRoom();
+        }
+
 
         public void Connect()
         {
             PhotonNetwork.AutomaticallySyncScene = true;
             Debug.Log("Pun Connected");
-            //if (PhotonNetwork.IsConnected) PhotonNetwork.JoinRandomRoom();
-            //else
-            //{
-            //    PhotonNetwork.GameVersion = _gameVersion;
-            //    PhotonNetwork.ConnectUsingSettings();
-            //}
-            
+            #if !UNITY_EDITOR
+            PhotonNetwork.NickName = _auth.CurrentUser.DisplayName;
+            #endif
+            PhotonNetwork.GameVersion = _gameVersion;
+            PhotonNetwork.ConnectUsingSettings(); 
         }
         public override void OnConnectedToMaster()
         {
@@ -107,6 +138,10 @@ namespace com.MKG.MB_NC
         public override void OnJoinedRoom()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
+            if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
+            {
+                LoadArena();
+            }
         }
 
         public void SignIn()

@@ -45,6 +45,7 @@ namespace com.MKG.MB_NC
         {
             _source.Play();
             if (_currentScene != 2) SceneManager.LoadScene(_scenes[_currentScene]);
+            else _gameManager.JoinOnlineDemo();
         }
 
         public void OnLeftButton()

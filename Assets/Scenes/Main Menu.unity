@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.1273174, g: 0.13414761, b: 0.12107885, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028334, g: 0.2257134, b: 0.30692226, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -5418,6 +5418,8 @@ MonoBehaviour:
   _connectButton: {fileID: 1745518345}
   _userName: {fileID: 832029971}
   _userImage: {fileID: 1231728090}
+  _playerPrefab: {fileID: 1721875336129792, guid: 6b799fc48897cb143a2859c6c3bedca2,
+    type: 3}
 --- !u!224 &1602198898
 RectTransform:
   m_ObjectHideFlags: 0

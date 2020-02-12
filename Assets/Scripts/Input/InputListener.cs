@@ -21,19 +21,20 @@ namespace com.MKG.MB_NC
         private EventSystem _eventSystem;
         public static bool TouchedOnContext = false;
         public static int CouroutineCounter = 0;
+        private Camera _camera;
 
-        void Awake()
+        protected void Awake()
         {
             Input.simulateMouseWithTouches = false;
         }
 
         void Start()
-        {
+        { 
             _eventSystem = GetComponent<EventSystem>();
             _graphicRaycaster = GameObject.Find("Canvas UI").GetComponent<GraphicRaycaster>();
             _ingameUI = GameObject.Find("Ingame UI Logic").GetComponent<IngameUI>();
             _grid = gameObject.GetComponent<HexMapCamera>().Grid;
-            if (_grid == null) Debug.Log("chuj");
+            _camera = MatchManager.Camera.GetComponentInChildren<Camera>();
         }
 
 
@@ -94,7 +95,7 @@ namespace com.MKG.MB_NC
                         if (_acumTime >= _holdTime && !_touchHeldProcessed)
                         {
                             _touchHeldProcessed = true;
-                            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                            Ray inputRay = _camera.ScreenPointToRay(Input.mousePosition);
                             RaycastHit hit;
                             if (!IsPointerOverUIObject(Input.GetTouch(0).position) && Physics.Raycast(inputRay, out hit))
                             {
@@ -129,7 +130,7 @@ namespace com.MKG.MB_NC
                         {
                             if (_acumTime < _holdTime)
                             {
-                                Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                                Ray inputRay = _camera.ScreenPointToRay(Input.mousePosition);
                                 RaycastHit hit;
                                 if (!IsPointerOverUIObject(Input.GetTouch(0).position) && Physics.Raycast(inputRay, out hit))
                                 {
@@ -171,7 +172,7 @@ namespace com.MKG.MB_NC
                                 StartCoroutine(TouchDelay());
                             else
                             {
-                                Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                                Ray inputRay = _camera.ScreenPointToRay(Input.mousePosition);
                                 RaycastHit hit;
                                 if (Physics.Raycast(inputRay, out hit))
                                 {
@@ -191,7 +192,7 @@ namespace com.MKG.MB_NC
                     {
                         if (Input.GetMouseButtonDown(0))
                         {
-                            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                            Ray inputRay = _camera.ScreenPointToRay(Input.mousePosition);
                             RaycastHit hit;
                             if (!IsPointerOverUIObject(Input.mousePosition) && Physics.Raycast(inputRay, out hit))
                             {
@@ -223,7 +224,7 @@ namespace com.MKG.MB_NC
                         }
                         else if (Input.GetMouseButtonDown(1))
                         {
-                            Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                            Ray inputRay = _camera.ScreenPointToRay(Input.mousePosition);
                             RaycastHit hit;
                             if (!IsPointerOverUIObject(Input.mousePosition) && Physics.Raycast(inputRay, out hit))
                             {

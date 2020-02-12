@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 
@@ -51,7 +52,7 @@ namespace com.MKG.MB_NC
             "Phase:  Movement Phase 2   3/4", "Phase:  Attack Phase 2   4/4"
         };
 
-        void Awake()
+        protected void Awake()
         {
 
             if (Instance != null) Debug.LogError("More than one MatchManager in scene!");

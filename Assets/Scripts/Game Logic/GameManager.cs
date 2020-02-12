@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
@@ -31,10 +32,9 @@ namespace com.MKG.MB_NC
         private TextMeshProUGUI _userName;
         [SerializeField]
         private Image _userImage;
-       
-         
-        
-        
+        [SerializeField] private GameObject _playerPrefab;
+        public GameObject PlayerPrefab { get => _playerPrefab; }
+
         void Awake()
         {
             if (Instance != null)
@@ -50,11 +50,7 @@ namespace com.MKG.MB_NC
             }
         }
 
-        private void Update() {
-            //if (!IsOnline) {
-            //    EstablishConnection();
-            //}
-        }
+     
         private void SetupFirebase()
         {
             _app = FirebaseApp.DefaultInstance;
@@ -70,9 +66,9 @@ namespace com.MKG.MB_NC
                 IsOnline = true;
                 SetupFirebase();
                 Connect();
-                #if !UNITY_EDITOR
+#if UNITY_ANDROID
                 SignIn();
-                #endif
+#endif
             }
         }
 
@@ -110,9 +106,9 @@ namespace com.MKG.MB_NC
         {
             PhotonNetwork.AutomaticallySyncScene = true;
             Debug.Log("Pun Connected");
-            #if !UNITY_EDITOR
+#if UNITY_ANDROID
             PhotonNetwork.NickName = _auth.CurrentUser.DisplayName;
-            #endif
+#endif
             PhotonNetwork.GameVersion = _gameVersion;
             PhotonNetwork.ConnectUsingSettings(); 
         }
@@ -126,7 +122,9 @@ namespace com.MKG.MB_NC
         {
             Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason {0}", cause);
             IsOnline = false;
+#if UNITY_ANDROID
             SignOut();
+#endif
         }
 
         public override void OnJoinRandomFailed(short returnCode, string message)

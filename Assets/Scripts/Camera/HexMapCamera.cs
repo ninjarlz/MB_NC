@@ -465,6 +465,7 @@ namespace com.MKG.MB_NC
             _grid = GameObject.Find("Game").GetComponentInChildren<HexGrid>();
             _fightMechanics = gameObject.AddComponent<FightMechanics>();
             _fightMechanics.Grid = _grid;
+            _fpsCounter = GameObject.Find("FPS Counter").GetComponent<TextMeshProUGUI>();
         }
 
         void OnEnable()

@@ -1,13 +1,15 @@
 ﻿using System.Collections.Generic;
 using Photon.Pun;
+using Photon.Realtime;
 using TMPro;
 using UnityEngine;
 
 namespace com.MKG.MB_NC
 {
-    public class OnlineMatchManager : MatchManager
+    public class OnlineMatchManager : MatchManager, IPunObservable
     {
-        private GameObject localPlayer;
+        private GameObject _localPlayer;
+        private PhotonView _photonView;
 
         protected void Awake()
         {
@@ -15,10 +17,11 @@ namespace com.MKG.MB_NC
             else
             {
                 Instance = this;
+                _photonView = GetComponent<PhotonView>();
                 Grid = GetComponent<HexGrid>();
-                localPlayer = PhotonNetwork.Instantiate(GameManager.Instance.PlayerPrefab.name, Vector3.zero,
+                _localPlayer = PhotonNetwork.Instantiate(GameManager.Instance.PlayerPrefab.name, Vector3.zero,
                     Quaternion.identity, 0);
-                Camera = localPlayer.GetComponentInChildren<HexMapCamera>(); 
+                Camera = _localPlayer.GetComponentInChildren<HexMapCamera>(); 
                 if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
                 {
                     Camera.transform.position = new Vector3(100f, 0f, 238.7645f);
@@ -39,7 +42,29 @@ namespace com.MKG.MB_NC
                 {
                     unitManager.CanvasInfo.transform.rotation = Quaternion.Euler(90f, 0f, -180f);
                 }
+                _photonView.RPC("SetOwnership", RpcTarget.MasterClient);
             }
+        }
+
+        [PunRPC]
+        public void SetOwnership()
+        {
+            Player firstPlayer = PhotonNetwork.CurrentRoom.Players[1];
+            foreach (UnitManager unitManager in UnitsFirstSide)
+            {
+                unitManager.GetComponent<PhotonView>().TransferOwnership(firstPlayer);
+            }
+            
+            Player secondPlayer = PhotonNetwork.CurrentRoom.Players[2];
+            foreach (UnitManager unitManager in UnitsSecondSide)
+            { 
+                unitManager.GetComponent<PhotonView>().TransferOwnership(secondPlayer);
+            }
+        }
+
+        public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

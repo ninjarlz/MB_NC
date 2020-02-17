@@ -1,4 +1,5 @@
 ﻿using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 
 namespace com.MKG.MB_NC
@@ -19,6 +20,14 @@ namespace com.MKG.MB_NC
                 GetComponentInChildren<AudioListener>().enabled = false;
                 enabled = false;
             }
+            // else
+            // {
+            //     if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
+            //     {
+            //        
+            //     }
+            //
+            // }
         }
 
     }

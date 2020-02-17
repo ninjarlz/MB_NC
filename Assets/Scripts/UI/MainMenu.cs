@@ -84,7 +84,7 @@ namespace com.MKG.MB_NC
             {
                 _playButton.image.sprite = _playButtonImages[0];
                 _playButton.image.SetNativeSize();
-                _lockImage.SetActive(false);
+                _lockImage.SetActive(false); 
             }
         }
 

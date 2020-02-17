@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Google;
 using UnityEngine.Networking;
 using System.Collections;
+using Firebase.Database;
+using Firebase.Unity.Editor;
 using TMPro;
 using UnityEngine.SceneManagement;
 
@@ -55,6 +57,7 @@ namespace com.MKG.MB_NC
         {
             _app = FirebaseApp.DefaultInstance;
             _auth = FirebaseAuth.DefaultInstance;
+            _app.SetEditorDatabaseUrl("https://mb-nc-a2dd3.firebaseio.com/");
         }
 
       
@@ -66,8 +69,10 @@ namespace com.MKG.MB_NC
                 IsOnline = true;
                 SetupFirebase();
                 Connect();
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
                 SignIn();
+#else 
+                MockSignIn();
 #endif
             }
         }
@@ -106,7 +111,7 @@ namespace com.MKG.MB_NC
         {
             PhotonNetwork.AutomaticallySyncScene = true;
             Debug.Log("Pun Connected");
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             PhotonNetwork.NickName = _auth.CurrentUser.DisplayName;
 #endif
             PhotonNetwork.GameVersion = _gameVersion;
@@ -122,7 +127,7 @@ namespace com.MKG.MB_NC
         {
             Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason {0}", cause);
             IsOnline = false;
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             SignOut();
 #endif
         }
@@ -142,9 +147,29 @@ namespace com.MKG.MB_NC
             }
         }
 
+
+        public void MockSignIn()
+        {
+            _userName.text = "Test Test";
+            DatabaseReference usersRef = FirebaseDatabase.DefaultInstance.RootReference.Child("Users"); 
+            usersRef.GetValueAsync().ContinueWith(dbTask => {
+                if (dbTask.IsFaulted) 
+                {
+                    Debug.LogError("Cannot connect to database");
+                }
+                else if (dbTask.IsCompleted) {
+                    DataSnapshot snapshot = dbTask.Result;
+                    String userId = _userName.text;
+                    if (!snapshot.HasChild(userId)) {
+                        string json = JsonUtility.ToJson(new User());
+                        usersRef.Child(userId).SetRawJsonValueAsync(json);
+                    }
+                }
+            });
+        }
+
         public void SignIn()
         {
-            Debug.Log("AAA");
             GoogleSignIn.Configuration = new GoogleSignInConfiguration
             {
                 RequestIdToken = true,
@@ -181,6 +206,21 @@ namespace com.MKG.MB_NC
                             FirebaseUser user = ((Task<FirebaseUser>)authTask).Result;
                             signInCompleted.SetResult(user);
                             _userName.text = _auth.CurrentUser.DisplayName;
+                            DatabaseReference usersRef = FirebaseDatabase.DefaultInstance.RootReference.Child("Users"); 
+                            usersRef.GetValueAsync().ContinueWith(dbTask => {
+                                if (dbTask.IsFaulted) 
+                                {
+                                    Debug.LogError("Cannot connect to database");
+                                }
+                                else if (dbTask.IsCompleted) {
+                                    DataSnapshot snapshot = dbTask.Result;
+                                    String userId = _auth.CurrentUser.UserId;
+                                    if (!snapshot.HasChild(userId)) {
+                                        string json = JsonUtility.ToJson(new User());
+                                        usersRef.Child(userId).SetRawJsonValueAsync(json);
+                                    }
+                                }
+                            });
                             StartCoroutine(SetProfileImage());
                         }
                     });

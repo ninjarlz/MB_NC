@@ -174,12 +174,16 @@ namespace com.MKG.MB_NC
             get { return _currentHex; }
             set
             {
-                _currentHex.Unit = null;
-                _currentHex = value;
-                if (value)
+                if (value != _currentHex)
                 {
-                    _currentHex.Unit = this;
-                    transform.position = new Vector3(_currentHex.transform.position.x, _currentHex.transform.position.y, _currentHex.transform.position.z);
+                    _currentHex.Unit = null;
+                    _currentHex = value;
+                    if (value)
+                    {
+                        _currentHex.Unit = this;
+                        transform.position = new Vector3(_currentHex.transform.position.x,
+                            _currentHex.transform.position.y, _currentHex.transform.position.z);
+                    }
                 }
             }
         }
@@ -328,6 +332,12 @@ namespace com.MKG.MB_NC
         #endregion
 
         #region Additional Funcs
+
+        public void SetHexByIntCoordinates(int x, int z)
+        {
+            CurrentHex = MatchManager.Grid.GetHex(new HexCoordinates(x, z));
+        }
+
         private IEnumerator Deactivating()
         {
             CurrentState = State.Idle; 

@@ -9,16 +9,16 @@ using System.Threading.Tasks;
 using Google;
 using UnityEngine.Networking;
 using System.Collections;
-using Firebase.Database;
 using Firebase.Unity.Editor;
 using TMPro;
 using UnityEngine.SceneManagement;
 
 namespace com.MKG.MB_NC
 {
-    public class GameManager : MonoBehaviourPunCallbacks
+    public class GameManager : MonoBehaviourPunCallbacks, IUserListener
     {
-        public static GameManager Instance;
+        private static GameManager _instance;
+        public static GameManager Instance { get { return _instance; } }
         public static MatchManager CurrentMatch { get; set; }
         private const string _gameVersion = "1";
         [SerializeField]
@@ -27,6 +27,7 @@ namespace com.MKG.MB_NC
         public static FirebaseApp App { get { return Instance._app; } }
         private FirebaseAuth _auth;
         public static FirebaseAuth Auth { get { return Instance._auth; } }
+        private UserRepository _userRepository;
         public bool IsOnline { get; set; }
         [SerializeField]
         private Button _connectButton;
@@ -46,7 +47,7 @@ namespace com.MKG.MB_NC
             }
             else
             {
-                Instance = this;
+                _instance = this;
                 DontDestroyOnLoad(gameObject);
                 EstablishConnection();
             }
@@ -58,6 +59,8 @@ namespace com.MKG.MB_NC
             _app = FirebaseApp.DefaultInstance;
             _auth = FirebaseAuth.DefaultInstance;
             _app.SetEditorDatabaseUrl("https://mb-nc-a2dd3.firebaseio.com/");
+            _userRepository = UserRepository.Instance;
+            _userRepository.UserListeners.Add(this);
         }
 
       
@@ -84,8 +87,12 @@ namespace com.MKG.MB_NC
                 PhotonNetwork.JoinRandomRoom();
             }
         }
-        
-        
+
+        public void JoinRoomWithParamters(string mapName)
+        {
+            
+        }
+
         public override void OnLeftRoom()
         {
             SceneManager.LoadScene("Main Menu");
@@ -151,21 +158,7 @@ namespace com.MKG.MB_NC
         public void MockSignIn()
         {
             _userName.text = "Test Test";
-            DatabaseReference usersRef = FirebaseDatabase.DefaultInstance.RootReference.Child("Users"); 
-            usersRef.GetValueAsync().ContinueWith(dbTask => {
-                if (dbTask.IsFaulted) 
-                {
-                    Debug.LogError("Cannot connect to database");
-                }
-                else if (dbTask.IsCompleted) {
-                    DataSnapshot snapshot = dbTask.Result;
-                    String userId = _userName.text;
-                    if (!snapshot.HasChild(userId)) {
-                        string json = JsonUtility.ToJson(new User());
-                        usersRef.Child(userId).SetRawJsonValueAsync(json);
-                    }
-                }
-            });
+            _userRepository.SetCurrentUser(_userName.text, _userName.text, "test@mail.com", null);
         }
 
         public void SignIn()
@@ -206,22 +199,8 @@ namespace com.MKG.MB_NC
                             FirebaseUser user = ((Task<FirebaseUser>)authTask).Result;
                             signInCompleted.SetResult(user);
                             _userName.text = _auth.CurrentUser.DisplayName;
-                            DatabaseReference usersRef = FirebaseDatabase.DefaultInstance.RootReference.Child("Users"); 
-                            usersRef.GetValueAsync().ContinueWith(dbTask => {
-                                if (dbTask.IsFaulted) 
-                                {
-                                    Debug.LogError("Cannot connect to database");
-                                }
-                                else if (dbTask.IsCompleted) {
-                                    DataSnapshot snapshot = dbTask.Result;
-                                    String userId = _auth.CurrentUser.UserId;
-                                    if (!snapshot.HasChild(userId)) {
-                                        string json = JsonUtility.ToJson(new User());
-                                        usersRef.Child(userId).SetRawJsonValueAsync(json);
-                                    }
-                                }
-                            });
-                            StartCoroutine(SetProfileImage());
+                            _userRepository.SetCurrentUser(_auth.CurrentUser.UserId, _auth.CurrentUser.DisplayName,
+                                _auth.CurrentUser.Email, _auth.CurrentUser.PhotoUrl.ToString());
                         }
                     });
                 }
@@ -249,6 +228,23 @@ namespace com.MKG.MB_NC
                 _userImage.sprite = image;
                 _userImage.gameObject.SetActive(true);
             }
+        }
+
+        public void OnUserDataChange()
+        {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            if (!string.IsNullOrEmpty(_userRepository.CurrentUser.PhotoUrl))
+            {
+                StartCoroutine(SetProfileImage());
+            }
+#else
+            _userName.text = _userRepository.CurrentUser.DisplayedName + ", profile updated!";
+#endif
+        }
+
+        private void OnDestroy()
+        {
+            _userRepository.UserListeners.Remove(this);
         }
     }
 }

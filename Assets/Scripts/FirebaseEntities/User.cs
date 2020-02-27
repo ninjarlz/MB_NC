@@ -36,5 +36,12 @@
             Defeats = defeats;
         }
 
+        public double WinsDefeatsRatio() {
+            if (Defeats == 0) {
+                return double.PositiveInfinity;
+            } else {
+                return ((double) Wins) / Defeats;
+            }
+        }
     }
 }

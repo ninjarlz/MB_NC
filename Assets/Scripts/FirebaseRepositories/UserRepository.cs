@@ -38,20 +38,21 @@ namespace com.MKG.MB_NC
                 }
                 else if (dbTask.IsCompleted) {
                     DataSnapshot snapshot = dbTask.Result;
-                    
+
                     if (!snapshot.HasChild(userId)) {
                         string json = JsonUtility.ToJson(new User(displayedName, email, photoUrl));
-                        _usersRef.Child(userId).SetRawJsonValueAsync(json);
+                        _userRef = _usersRef.Child(userId);
+                        _userRef.SetRawJsonValueAsync(json);
+                    } else {
+                        _userRef = _usersRef.Child(userId);
                     }
-                }
 
-                if (_userRef != null)
-                {
-                    _userRef.ValueChanged -= OnUserDataChange;
-                }
+                    if (_userRef != null) {
+                        _userRef.ValueChanged -= OnUserDataChange;
+                    }
 
-                _userRef = _usersRef.Child(userId);
-                _userRef.ValueChanged += OnUserDataChange;
+                   _userRef.ValueChanged += OnUserDataChange;
+                }
             });
         }
 
@@ -63,7 +64,6 @@ namespace com.MKG.MB_NC
                 return;
             }
             _currentUser = JsonUtility.FromJson<User>(args.Snapshot.GetRawJsonValue());
-            if (_currentUser == null) Debug.Log("elooooooo");
             foreach (IUserListener userListener in _userListeners)
             {
                 userListener.OnUserDataChange();

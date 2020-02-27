@@ -12,11 +12,17 @@ using System.Collections;
 using Firebase.Unity.Editor;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 namespace com.MKG.MB_NC
 {
-    public class GameManager : MonoBehaviourPunCallbacks, IUserListener
+    public class GameManager : MonoBehaviourPunCallbacks, IUserListener, ILobbyCallbacks
     {
+
+
+#if !UNITY_ANDROID || UNITY_EDITOR
+        public const string _testPlayerName = "Test Test"; 
+#endif
         private static GameManager _instance;
         public static GameManager Instance { get { return _instance; } }
         public static MatchManager CurrentMatch { get; set; }
@@ -37,6 +43,7 @@ namespace com.MKG.MB_NC
         private Image _userImage;
         [SerializeField] private GameObject _playerPrefab;
         public GameObject PlayerPrefab { get => _playerPrefab; }
+        private RoomInfo _mostSuitable;
 
         void Awake()
         {
@@ -53,7 +60,6 @@ namespace com.MKG.MB_NC
             }
         }
 
-     
         private void SetupFirebase()
         {
             _app = FirebaseApp.DefaultInstance;
@@ -84,13 +90,46 @@ namespace com.MKG.MB_NC
         {
             if (PhotonNetwork.IsConnected)
             {
-                PhotonNetwork.JoinRandomRoom();
+                if (_mostSuitable != null) 
+                {
+                    PhotonNetwork.JoinRoom(_mostSuitable.Name);
+                } 
+                else 
+                {
+                    CreateRoom();
+                }
             }
         }
 
-        public void JoinRoomWithParamters(string mapName)
+        public override void OnRoomListUpdate(List<RoomInfo> roomList) 
         {
-            
+            if (roomList.Count != 0) {
+                
+                RoomInfo mostSuitable = roomList[0];
+                double currUserWDRatio = _userRepository.CurrentUser.WinsDefeatsRatio();
+                for (int i = 1; i < roomList.Count; i++) {
+                    ExitGames.Client.Photon.Hashtable currProps = roomList[i].CustomProperties;
+                    ExitGames.Client.Photon.Hashtable mostSuitableProps = mostSuitable.CustomProperties;
+                    int currLvl = (int)currProps["level"];
+                    int suitableLvl = (int)mostSuitableProps["level"];
+                    int currWDRatio = (int)currProps["w/d"];
+                    int suitableWDRatio = (int)mostSuitableProps["w/d"];
+                    if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) <
+                        Math.Abs(_userRepository.CurrentUser.Level - suitableLvl)) {
+                        mostSuitable = roomList[i];
+                    } else if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) ==
+                          Math.Abs(_userRepository.CurrentUser.Level - suitableLvl)) {
+                        if (Math.Abs(currUserWDRatio - currWDRatio) < Math.Abs(currWDRatio - suitableWDRatio)) {
+                            mostSuitable = roomList[i];
+                        }
+                    }
+                }
+                _mostSuitable = mostSuitable;
+            } 
+            else 
+            {
+                _mostSuitable = null;
+            }
         }
 
         public override void OnLeftRoom()
@@ -122,11 +161,12 @@ namespace com.MKG.MB_NC
             PhotonNetwork.NickName = _auth.CurrentUser.DisplayName;
 #endif
             PhotonNetwork.GameVersion = _gameVersion;
-            PhotonNetwork.ConnectUsingSettings(); 
+            PhotonNetwork.ConnectUsingSettings();
         }
         public override void OnConnectedToMaster()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
+            PhotonNetwork.JoinLobby();
         }
 
 
@@ -139,27 +179,56 @@ namespace com.MKG.MB_NC
 #endif
         }
 
+
+        public void CreateRoom() 
+        {
+            RoomOptions roomOptions = new RoomOptions();
+            roomOptions.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable()
+            {
+                {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio() },
+                {"level", _userRepository.CurrentUser.Level}
+            };
+            roomOptions.MaxPlayers = _maxPlayersPerRoom;
+            Debug.Log("CreateRoom() was called. No room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
+#if UNITY_ANDROID && !UNITY_EDITOR
+            PhotonNetwork.CreateRoom(_auth.CurrentUser.UserId, roomOptions);
+#else
+            PhotonNetwork.CreateRoom(_testPlayerName, roomOptions);
+#endif
+        }
+
         public override void OnJoinRandomFailed(short returnCode, string message)
         {
+            RoomOptions roomOptions = new RoomOptions();
+            roomOptions.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable()
+            {
+                {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio() },
+                {"level", _userRepository.CurrentUser.Level}
+            };
+            roomOptions.MaxPlayers = _maxPlayersPerRoom;
             Debug.Log("PUN Basics Tutorial/Launcher:OnJoinRandomFailed() was called by PUN. No random room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
-            PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = _maxPlayersPerRoom });
+            PhotonNetwork.CreateRoom(_auth.CurrentUser.UserId, roomOptions);
         }
 
         public override void OnJoinedRoom()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
-            if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
-            {
+            if (PhotonNetwork.CurrentRoom.PlayerCount == 1) {
                 LoadArena();
-            }
+            } 
+            else 
+            {
+                PhotonNetwork.CurrentRoom.IsVisible = false;
+            } 
         }
 
-
+#if !UNITY_ANDROID || UNITY_EDITOR
         public void MockSignIn()
         {
-            _userName.text = "Test Test";
-            _userRepository.SetCurrentUser(_userName.text, _userName.text, "test@mail.com", null);
+            _userName.text = _testPlayerName;
+            _userRepository.SetCurrentUser(_testPlayerName, _testPlayerName, _testPlayerName, null);
         }
+#endif
 
         public void SignIn()
         {
@@ -206,6 +275,7 @@ namespace com.MKG.MB_NC
                 }
             });
         }
+
 
         public void SignOut()
         {

@@ -95,7 +95,7 @@ namespace com.MKG.MB_NC
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #elif UNITY_ANDROID
-            _gameManager.SignOut();
+            Auth.Instance.SignOut();
             System.Diagnostics.Process.GetCurrentProcess().Kill();
 #endif
         }

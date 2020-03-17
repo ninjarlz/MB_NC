@@ -37,8 +37,10 @@ namespace com.MKG.MB_NC
                     Debug.LogError("Cannot connect to database");
                 }
                 else if (dbTask.IsCompleted) {
+                    if (_userRef != null) {
+                        _userRef.ValueChanged -= OnUserDataChange;
+                    }
                     DataSnapshot snapshot = dbTask.Result;
-
                     if (!snapshot.HasChild(userId)) {
                         string json = JsonUtility.ToJson(new User(displayedName, email, photoUrl));
                         _userRef = _usersRef.Child(userId);
@@ -46,12 +48,7 @@ namespace com.MKG.MB_NC
                     } else {
                         _userRef = _usersRef.Child(userId);
                     }
-
-                    if (_userRef != null) {
-                        _userRef.ValueChanged -= OnUserDataChange;
-                    }
-
-                   _userRef.ValueChanged += OnUserDataChange;
+                    _userRef.ValueChanged += OnUserDataChange;
                 }
             });
         }

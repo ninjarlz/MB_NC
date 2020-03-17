@@ -56,7 +56,7 @@ namespace com.MKG.MB_NC
             }
             else
             {
-                WinCameraTarget = player ? false : true;
+                WinCameraTarget = !player;
                 _winDescription.text = "Player " + (player ? "1" : "2") + " has won\nby capturing enemy camp.";
             }
             WinStatementActive = true;

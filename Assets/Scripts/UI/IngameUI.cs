@@ -7,7 +7,7 @@ using TMPro;
 
 namespace com.MKG.MB_NC
 {
-    public class IngameUI : UIModule
+    public abstract class IngameUI : UIModule
     {
 
         public bool WinCameraTarget { get; set; } // true - viking camp, false - anglo-saxons camp
@@ -43,8 +43,7 @@ namespace com.MKG.MB_NC
         {
             get { return _turnButton; }
         }
-        [SerializeField]
-        private HexMapCamera _hexCameraScript;
+        
 
 
         public void ShowWin(bool winType, bool player) // true - camp, false - time delay
@@ -330,18 +329,6 @@ namespace com.MKG.MB_NC
         public void OnSaveGameButton()
         {
             _source.Play();
-        }
-
-        public override void OnOptionsButton()
-        {
-            base.OnOptionsButton();
-            _hexCameraScript.enabled = false;
-        }
-
-        public override void OnBackButton()
-        {
-            base.OnBackButton();
-            _hexCameraScript.enabled = true;
         }
 
         public IEnumerator TurnButtonUnlock()

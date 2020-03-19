@@ -1,6 +1,8 @@
 ﻿using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace com.MKG.MB_NC
 {
@@ -9,26 +11,25 @@ namespace com.MKG.MB_NC
         private PhotonView _photonView;
         public PhotonView PhotonView { get => _photonView; }
 
-        protected void Awake()
+        protected override void Awake()
         {
             base.Awake();
             _photonView = GetComponent<PhotonView>();
             if (!_photonView.IsMine)
             {
-                GetComponent<HexMapCamera>().enabled = false;
                 GetComponentInChildren<Camera>().enabled = false;
                 GetComponentInChildren<AudioListener>().enabled = false;
-                enabled = false;
             }
-            // else
-            // {
-            //     if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
-            //     {
-            //        
-            //     }
-            //
-            // }
+            enabled = false;
+        }
+
+        public void Activate()
+        {
+            GetComponent<HexMapCamera>().enabled = true;
+            enabled = true;
         }
 
     }
+    
+    
 }

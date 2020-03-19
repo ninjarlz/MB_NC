@@ -17,6 +17,7 @@ namespace com.MKG.MB_NC
     {
         private const int MATCHMAKING_STARTING_LIMIT = 0;
         private const int MAX_LVL_DIFF = 3;
+        private const string PRIVATE_ROOM_SUFFIX = " - private";
         private static GameManager _instance;
         public static GameManager Instance { get { return _instance; } }
         public static MatchManager CurrentMatch { get; set; }
@@ -113,7 +114,7 @@ namespace com.MKG.MB_NC
         }
 
         public override void OnRoomListUpdate(List<RoomInfo> roomList)
-        {
+        {Debug.Log("eoooo");
             _roomList = roomList;
             if (_roomList.Count > 0) 
             {
@@ -128,7 +129,8 @@ namespace com.MKG.MB_NC
                     double currWDRatio = (double) currProps["w/d"];
                     double currUserWDRatio = _userRepository.CurrentUser.WinsDefeatsRatio();
 
-                    if (currProps["arenaName"].Equals(mostSuitable.CustomProperties["arenaName"]))
+                    if (currProps["arenaName"].Equals(mostSuitable.CustomProperties["arenaName"]) &&
+                        !(bool)currProps["isPrivate"])
                     {
                         if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) <
                             Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
@@ -195,16 +197,13 @@ namespace com.MKG.MB_NC
         {
             PhotonNetwork.AutomaticallySyncScene = true;
             Debug.Log("Pun Connected");
-#if UNITY_ANDROID && !UNITY_EDITOR
-            PhotonNetwork.NickName = _auth.CurrentUser.DisplayName;
-#endif
             PhotonNetwork.GameVersion = _gameVersion;
             PhotonNetwork.ConnectUsingSettings();
         }
         public override void OnConnectedToMaster()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
-            PhotonNetwork.JoinLobby();
+            PhotonNetwork.JoinLobby(TypedLobby.Default);
         }
 
 
@@ -225,16 +224,34 @@ namespace com.MKG.MB_NC
             {
                 {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio() },
                 {"level", _userRepository.CurrentUser.Level },
-                {"arenaName", _arenaName }
+                {"arenaName", _arenaName },
+                {"isPrivate", false}
             };
-            roomOptions.CustomRoomPropertiesForLobby = new string[] {"w/d", "level", "arenaName"};
+            roomOptions.CustomRoomPropertiesForLobby = new string[] {"w/d", "level", "arenaName", "isPrivate"};
             roomOptions.MaxPlayers = _maxPlayersPerRoom;
             Debug.Log("CreateRoom() was called. No room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITORF
             PhotonNetwork.CreateRoom(_auth.CurrentUser.UserId, roomOptions);
 #else
             PhotonNetwork.CreateRoom(Auth.TEST_PLAYER_NAME, roomOptions);
 #endif
+        }
+        
+        
+        public void CreatePrivateRoom(string roomName) 
+        {
+            RoomOptions roomOptions = new RoomOptions();
+            roomOptions.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable()
+            {
+                {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio() },
+                {"level", _userRepository.CurrentUser.Level },
+                {"arenaName", _arenaName },
+                {"isPrivate", true}
+            };
+            roomOptions.CustomRoomPropertiesForLobby = new string[] {"w/d", "level", "arenaName", "isPrivate"};
+            roomOptions.MaxPlayers = _maxPlayersPerRoom;
+            Debug.Log("CreateRoom() was called. No room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
+            PhotonNetwork.CreateRoom(roomName + PRIVATE_ROOM_SUFFIX, roomOptions);
         }
 
         public override void OnJoinRandomFailed(short returnCode, string message)
@@ -291,6 +308,7 @@ namespace com.MKG.MB_NC
 
         public void OnSignIn()
         {
+            PhotonNetwork.NickName = _auth.CurrentUser.DisplayName;
             _userName.text = _auth.CurrentUser.DisplayName;
             _userRepository.SetCurrentUser(_auth.CurrentUser.UserId, _auth.CurrentUser.DisplayName,
             _auth.CurrentUser.Email, _auth.CurrentUser.PhotoUrl.ToString());

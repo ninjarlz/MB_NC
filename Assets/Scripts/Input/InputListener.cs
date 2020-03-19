@@ -10,20 +10,20 @@ namespace com.MKG.MB_NC
     {
 
 
-        private HexGrid _grid;
-        private IngameUI _ingameUI;
-        private float _acumTime = 0f;
-        private readonly float _holdTime = 0.8f;
-        private bool _touchHeldProcessed = false;
-        private Hex _touchedHex;
-        private PointerEventData _pointerEventData;
-        private GraphicRaycaster _graphicRaycaster;
-        private EventSystem _eventSystem;
+        protected HexGrid _grid;
+        protected IngameUI _ingameUI;
+        protected float _acumTime = 0f;
+        protected readonly float _holdTime = 0.8f;
+        protected bool _touchHeldProcessed = false;
+        protected Hex _touchedHex;
+        protected PointerEventData _pointerEventData;
+        protected GraphicRaycaster _graphicRaycaster;
+        protected EventSystem _eventSystem;
         public static bool TouchedOnContext = false;
         public static int CouroutineCounter = 0;
-        private Camera _camera;
+        protected Camera _camera;
 
-        protected void Awake()
+        protected virtual void Awake()
         {
             Input.simulateMouseWithTouches = false;
         }

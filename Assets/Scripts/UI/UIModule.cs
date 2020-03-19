@@ -104,6 +104,22 @@ namespace com.MKG.MB_NC
             _source.Play();
         }
 
+        public void OnMatchmakingButton()
+        {
+            _source.Play();
+        }
+        
+        public void OnJoinButton()
+        {
+            _source.Play();
+        }
+
+        public void OnHostButton()
+        {
+            _source.Play();
+        }
+
+
         public void SetVolume(float volume)
         {
             _audioMixer.SetFloat("volume", volume);

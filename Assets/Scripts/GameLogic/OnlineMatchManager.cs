@@ -10,14 +10,16 @@ namespace com.MKG.MB_NC
     {
         private GameObject _localPlayer;
         private PhotonView _photonView;
+        private GameObject _waitingMsg;
 
-        protected void Awake()
+        protected override void Awake()
         {
             if (Instance != null) Debug.LogError("More than one MatchManager in scene!");
             else
             {
                 Instance = this;
                 _photonView = GetComponent<PhotonView>();
+                _waitingMsg = GameObject.Find("Canvas Waiting");
                 Grid = GetComponent<HexGrid>();
                 _localPlayer = PhotonNetwork.Instantiate(GameManager.Instance.PlayerPrefab.name, Vector3.zero,
                     Quaternion.identity, 0);
@@ -26,6 +28,8 @@ namespace com.MKG.MB_NC
                 {
                     Camera.transform.position = new Vector3(100f, 0f, 238.7645f);
                     Camera.transform.rotation = Quaternion.Euler(0f, -180f, 0f);
+                    _waitingMsg.SetActive(false);
+                    _localPlayer.GetComponentInChildren<OnlineInputListener>().Activate();
                 }
                 CurrentPhaseText = GameObject.Find("Current Phase Text").GetComponent<TextMeshProUGUI>();
                 CurrentTurnText = GameObject.Find("Current Turn Text").GetComponent<TextMeshProUGUI>();
@@ -60,6 +64,8 @@ namespace com.MKG.MB_NC
             { 
                 unitManager.GetComponent<PhotonView>().TransferOwnership(secondPlayer);
             }
+            _waitingMsg.SetActive(false);
+            _localPlayer.GetComponentInChildren<OnlineInputListener>().Activate();
         }
 
         public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)

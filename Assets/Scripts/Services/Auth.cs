@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Google;
+using UnityEngine;
 
 namespace com.MKG.MB_NC
 {
@@ -66,6 +67,7 @@ namespace com.MKG.MB_NC
                 else if (task.IsFaulted)
                 {
                     signInCompleted.SetException(task.Exception);
+                    Debug.LogError("An error with GoogleSignIn occured: " + task.Exception);
                 }
                 else
                 {
@@ -81,11 +83,13 @@ namespace com.MKG.MB_NC
                         else if (authTask.IsFaulted)
                         {
                             signInCompleted.SetException(authTask.Exception);
+                            Debug.LogError("An error with GoogleSignIn occured: " + authTask.Exception);
                         }
                         else
                         {
                             FirebaseUser user = ((Task<FirebaseUser>) authTask).Result;
                             signInCompleted.SetResult(user);
+                            Debug.Log("O CHUJ " + user.DisplayName);
                             _authListeners.ForEach(listener => listener.OnSignIn());
                         }
                     });

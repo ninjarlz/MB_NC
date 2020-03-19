@@ -52,7 +52,7 @@ namespace com.MKG.MB_NC
             "Phase:  Movement Phase 2   3/4", "Phase:  Attack Phase 2   4/4"
         };
 
-        protected void Awake()
+        protected virtual void Awake()
         {
 
             if (Instance != null) Debug.LogError("More than one MatchManager in scene!");

@@ -89,7 +89,6 @@ namespace com.MKG.MB_NC
                         {
                             FirebaseUser user = ((Task<FirebaseUser>) authTask).Result;
                             signInCompleted.SetResult(user);
-                            Debug.Log("O CHUJ " + user.DisplayName);
                             _authListeners.ForEach(listener => listener.OnSignIn());
                         }
                     });

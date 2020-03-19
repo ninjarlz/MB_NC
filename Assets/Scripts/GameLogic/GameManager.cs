@@ -17,7 +17,7 @@ namespace com.MKG.MB_NC
     {
         private const int MATCHMAKING_STARTING_LIMIT = 0;
         private const int MAX_LVL_DIFF = 3;
-        private const string PRIVATE_ROOM_SUFFIX = " - private";
+        public const string PRIVATE_ROOM_SUFFIX = " - private";
         private static GameManager _instance;
         public static GameManager Instance { get { return _instance; } }
         public static MatchManager CurrentMatch { get; set; }
@@ -39,13 +39,15 @@ namespace com.MKG.MB_NC
         private RoomInfo _mostSuitable;
         private string _arenaName;
         private List<RoomInfo> _roomList;
+        private List<RoomInfo> _publicRoomList;
+        private List<RoomInfo> _privateRoomList;
+        public List<RoomInfo> PrivateRoomList { get => _privateRoomList; }
         
         void Awake()
         {
             if (Instance != null)
             {
                 Destroy(gameObject);
-                
             }
             else
             {
@@ -82,7 +84,24 @@ namespace com.MKG.MB_NC
             }
         }
 
-        public void JoinOnlineMatch(string arenaName)
+        public void HostMatch(string roomName, string arenaName)
+        {
+            if (PhotonNetwork.IsConnected)
+            { 
+                _arenaName = arenaName;
+                CreatePrivateRoom(roomName);
+            }
+        }
+        
+        public void JoinHostedMatch(string roomName)
+        {
+            if (PhotonNetwork.IsConnected)
+            {
+                PhotonNetwork.JoinRoom(roomName);
+            }
+        }
+
+        public void JoinMatchmakingMatch(string arenaName)
         {
             if (PhotonNetwork.IsConnected)
             {
@@ -114,56 +133,90 @@ namespace com.MKG.MB_NC
         }
 
         public override void OnRoomListUpdate(List<RoomInfo> roomList)
-        {Debug.Log("eoooo");
+        {
+            Debug.Log("eoooo");
             _roomList = roomList;
-            if (_roomList.Count > 0) 
+            _publicRoomList = new List<RoomInfo>();
+            _privateRoomList = new List<RoomInfo>();
+            RoomInfo mostSuitable = null;
+            if (_roomList.Count > 0)
             {
-                RoomInfo mostSuitable = roomList[0];
-                Debug.Log(mostSuitable.Name);
-                int suitableLvl = (int) mostSuitable.CustomProperties["level"];
-                double suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
-                for (int i = 1; i < roomList.Count; i++)
+                int startingIndex = 0;
+                for (; startingIndex < _roomList.Count; startingIndex++)
                 {
-                    ExitGames.Client.Photon.Hashtable currProps = roomList[i].CustomProperties;
-                    int currLvl = (int) currProps["level"];
-                    double currWDRatio = (double) currProps["w/d"];
-                    double currUserWDRatio = _userRepository.CurrentUser.WinsDefeatsRatio();
-
-                    if (currProps["arenaName"].Equals(mostSuitable.CustomProperties["arenaName"]) &&
-                        !(bool)currProps["isPrivate"])
+                    ExitGames.Client.Photon.Hashtable currProps = roomList[startingIndex].CustomProperties;
+                    if (!(bool) currProps["isPrivate"])
                     {
-                        if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) <
-                            Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
+                        _publicRoomList.Add(roomList[startingIndex]);
+                        if (currProps["arenaName"].Equals(_arenaName))
                         {
-                            mostSuitable = roomList[i];
-                            suitableLvl = (int) mostSuitable.CustomProperties["level"];
-                            suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
-                        }
-                        else if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) ==
-                                 Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
-                        {
-                            if (Math.Abs(currUserWDRatio - currWDRatio) < Math.Abs(currWDRatio - suitableWDRatio))
-                            {
-                                mostSuitable = roomList[i];
-                                suitableLvl = (int) mostSuitable.CustomProperties["level"];
-                                suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
-                            }
+                            mostSuitable = roomList[startingIndex];
+                            break;
                         }
                     }
+                    else
+                    {
+                        _privateRoomList.Add(roomList[startingIndex]);
+                    }
                 }
-                Debug.Log("Ol je kurwa2");
-                Debug.Log("Diff:" + Math.Abs(_userRepository.CurrentUser.Level - suitableLvl).ToString());
-                Debug.Log("Curr user lvl: " + _userRepository.CurrentUser.Level.ToString());
-                Debug.Log("most suitable lvl: " + suitableLvl.ToString());
-                Debug.Log("limit: " + (MAX_LVL_DIFF + 1).ToString());
-                if (Math.Abs(_userRepository.CurrentUser.Level - suitableLvl) < MAX_LVL_DIFF + 1)
+
+                if (mostSuitable != null)
                 {
-                    Debug.Log("Ol je kurwa");
-                    _mostSuitable = mostSuitable;
-                }
-                else
-                {
-                    _mostSuitable = null;
+                    Debug.Log(mostSuitable.Name);
+                    int suitableLvl = (int) mostSuitable.CustomProperties["level"];
+                    double suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
+                    for (int i = startingIndex + 1; i < roomList.Count; i++)
+                    {
+                        ExitGames.Client.Photon.Hashtable currProps = roomList[i].CustomProperties;
+                        int currLvl = (int) currProps["level"];
+                        double currWDRatio = (double) currProps["w/d"];
+                        double currUserWDRatio = _userRepository.CurrentUser.WinsDefeatsRatio();
+
+                        if (!(bool) currProps["isPrivate"])
+                        {
+                            _publicRoomList.Add(roomList[i]);
+                            if (currProps["arenaName"].Equals(_arenaName))
+                            {
+                                if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) <
+                                    Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
+                                {
+                                    mostSuitable = roomList[i];
+                                    suitableLvl = (int) mostSuitable.CustomProperties["level"];
+                                    suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
+                                }
+                                else if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) ==
+                                         Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
+                                {
+                                    if (Math.Abs(currUserWDRatio - currWDRatio) <
+                                        Math.Abs(currWDRatio - suitableWDRatio))
+                                    {
+                                        mostSuitable = roomList[i];
+                                        suitableLvl = (int) mostSuitable.CustomProperties["level"];
+                                        suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            _privateRoomList.Add(roomList[i]);
+                        }
+                    }
+
+                    Debug.Log("Ol je kurwa2");
+                    Debug.Log("Diff:" + Math.Abs(_userRepository.CurrentUser.Level - suitableLvl).ToString());
+                    Debug.Log("Curr user lvl: " + _userRepository.CurrentUser.Level.ToString());
+                    Debug.Log("most suitable lvl: " + suitableLvl.ToString());
+                    Debug.Log("limit: " + (MAX_LVL_DIFF + 1).ToString());
+                    if (Math.Abs(_userRepository.CurrentUser.Level - suitableLvl) < MAX_LVL_DIFF + 1)
+                    {
+                        Debug.Log("Ol je kurwa");
+                        _mostSuitable = mostSuitable;
+                    }
+                    else
+                    {
+                        _mostSuitable = null;
+                    }
                 }
             }
             else 
@@ -230,7 +283,7 @@ namespace com.MKG.MB_NC
             roomOptions.CustomRoomPropertiesForLobby = new string[] {"w/d", "level", "arenaName", "isPrivate"};
             roomOptions.MaxPlayers = _maxPlayersPerRoom;
             Debug.Log("CreateRoom() was called. No room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
-#if UNITY_ANDROID && !UNITY_EDITORF
+#if UNITY_ANDROID && !UNITY_EDITOR
             PhotonNetwork.CreateRoom(_auth.CurrentUser.UserId, roomOptions);
 #else
             PhotonNetwork.CreateRoom(Auth.TEST_PLAYER_NAME, roomOptions);

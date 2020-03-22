@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Google;
+using Photon.Pun;
 using UnityEngine;
 
 namespace com.MKG.MB_NC
@@ -10,12 +11,10 @@ namespace com.MKG.MB_NC
 
     public class Auth
     {
-
-        public const string TEST_PLAYER_NAME = "Test Test";
         private FirebaseAuth _firebaseAuth;
+        public FirebaseAuth FirebaseAuth => _firebaseAuth;
         public FirebaseUser CurrentUser { get { return _firebaseAuth.CurrentUser; } }
         private static Auth _instance;
-        private UserRepository _userRepository;
         private List<IAuthListener> _authListeners = new List<IAuthListener>();
         public List<IAuthListener> AuthListeners { get { return _authListeners; } }
 
@@ -27,7 +26,6 @@ namespace com.MKG.MB_NC
                 {
                     _instance = new Auth();
                     _instance._firebaseAuth = FirebaseAuth.DefaultInstance;
-                    _instance._userRepository = UserRepository.Instance;
                 }
 
                 return _instance;
@@ -38,17 +36,11 @@ namespace com.MKG.MB_NC
         {
         }
 
-
-#if !UNITY_ANDROID || UNITY_EDITOR
-        public void MockSignIn()
-        {
-            _userRepository.SetCurrentUser(TEST_PLAYER_NAME, TEST_PLAYER_NAME, TEST_PLAYER_NAME, null);
-            _authListeners.ForEach(listener => listener.OnMockSignIn());
-        }
-#endif
-
         public void SignIn()
         {
+#if !UNITY_ANDROID || UNITY_EDITOR
+            _authListeners.ForEach(listener => listener.OnSignIn());
+#else            
             GoogleSignIn.Configuration = new GoogleSignInConfiguration
             {
                 RequestIdToken = true,
@@ -63,11 +55,13 @@ namespace com.MKG.MB_NC
                 if (task.IsCanceled)
                 {
                     signInCompleted.SetCanceled();
+                    GameManager.DisconnectFromPhoton();
                 }
                 else if (task.IsFaulted)
                 {
                     signInCompleted.SetException(task.Exception);
                     Debug.LogError("An error with GoogleSignIn occured: " + task.Exception);
+                    GameManager.DisconnectFromPhoton();
                 }
                 else
                 {
@@ -79,11 +73,13 @@ namespace com.MKG.MB_NC
                         if (authTask.IsCanceled)
                         {
                             signInCompleted.SetCanceled();
+                            GameManager.DisconnectFromPhoton();
                         }
                         else if (authTask.IsFaulted)
                         {
                             signInCompleted.SetException(authTask.Exception);
                             Debug.LogError("An error with GoogleSignIn occured: " + authTask.Exception);
+                            GameManager.DisconnectFromPhoton();
                         }
                         else
                         {
@@ -94,23 +90,24 @@ namespace com.MKG.MB_NC
                     });
                 }
             });
+#endif
         }
 
 
         public void SignOut()
         {
+            
+#if UNITY_ANDROID && !UNITY_EDITOR
             GoogleSignIn.DefaultInstance.SignOut();
+            _firebaseAuth.SignOut();
+#endif
             _authListeners.ForEach(listener => listener.OnSignOut());
         }
-
     }
 
     public interface IAuthListener
     {
         void OnSignIn();
-#if !UNITY_ANDROID || UNITY_EDITOR
-        void OnMockSignIn();
-#endif
         void OnSignOut();
     }
 }

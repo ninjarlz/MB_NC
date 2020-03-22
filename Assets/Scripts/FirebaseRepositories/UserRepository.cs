@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Firebase.Database;
-using System.Threading.Tasks;
+using Photon.Pun;
 using UnityEngine;
 
 namespace com.MKG.MB_NC
@@ -35,6 +35,7 @@ namespace com.MKG.MB_NC
                 if (dbTask.IsFaulted) 
                 {
                     Debug.LogError("Cannot connect to database");
+                    GameManager.DisconnectFromPhoton();
                 }
                 else if (dbTask.IsCompleted) {
                     if (_userRef != null) {
@@ -58,6 +59,7 @@ namespace com.MKG.MB_NC
             if (args.DatabaseError != null) 
             {
                 Debug.LogError(args.DatabaseError.Message);
+                GameManager.DisconnectFromPhoton();
                 return;
             }
             _currentUser = JsonUtility.FromJson<User>(args.Snapshot.GetRawJsonValue());

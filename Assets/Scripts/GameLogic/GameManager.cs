@@ -10,6 +10,7 @@ using Firebase.Unity.Editor;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace com.MKG.MB_NC
 {
@@ -18,6 +19,10 @@ namespace com.MKG.MB_NC
         private const int MATCHMAKING_STARTING_LIMIT = 0;
         private const int MAX_LVL_DIFF = 3;
         public const string PRIVATE_ROOM_SUFFIX = " - private";
+        public const string DISCONNECTED_MSG = "You are disconnected from network services";
+#if !UNITY_ANDROID || UNITY_EDITOR
+        public const string TEST_PLAYER_NAME = "Test Test";
+#endif
         private static GameManager _instance;
         public static GameManager Instance { get { return _instance; } }
         public static MatchManager CurrentMatch { get; set; }
@@ -27,19 +32,19 @@ namespace com.MKG.MB_NC
         private FirebaseApp _app;
         private Auth _auth;
         private UserRepository _userRepository;
-        public bool IsOnline { get; set; }
         [SerializeField]
         private Button _connectButton;
+        [SerializeField] 
+        private TextMeshProUGUI _disconnectedMsg;
         [SerializeField]
         private TextMeshProUGUI _userName;
         [SerializeField]
         private Image _userImage;
         [SerializeField] private GameObject _playerPrefab;
         public GameObject PlayerPrefab { get => _playerPrefab; }
-        private RoomInfo _mostSuitable;
-        private string _arenaName;
+        private string _arenaToLoad;
         private List<RoomInfo> _roomList;
-        private List<RoomInfo> _publicRoomList;
+        private Dictionary<string, List<RoomInfo>> _publicRooms;
         private List<RoomInfo> _privateRoomList;
         public List<RoomInfo> PrivateRoomList { get => _privateRoomList; }
         
@@ -67,28 +72,23 @@ namespace com.MKG.MB_NC
             _auth.AuthListeners.Add(this);
         }
 
-      
+        public void OnConnectButton()
+        {
+            _connectButton.interactable = false;
+            Connect();
+        }
+
         public void EstablishConnection()
         {
-            if (Application.internetReachability != NetworkReachability.NotReachable)
-            {
-                _connectButton.gameObject.SetActive(false);
-                IsOnline = true;
-                Setup();
-                Connect();
-#if UNITY_ANDROID && !UNITY_EDITOR
-                _auth.SignIn();
-#else 
-                _auth.MockSignIn();
-#endif
-            }
+            Setup();
+            Connect();
         }
 
         public void HostMatch(string roomName, string arenaName)
         {
             if (PhotonNetwork.IsConnected)
-            { 
-                _arenaName = arenaName;
+            {
+                _arenaToLoad = arenaName;
                 CreatePrivateRoom(roomName);
             }
         }
@@ -105,123 +105,117 @@ namespace com.MKG.MB_NC
         {
             if (PhotonNetwork.IsConnected)
             {
-                _arenaName = arenaName;
-                if (_roomList != null & _roomList.Count > MATCHMAKING_STARTING_LIMIT)
+                _arenaToLoad = arenaName;
+                if (_publicRooms != null && _publicRooms.ContainsKey(arenaName))
                 {
-                    if (_mostSuitable != null) 
+                    List<RoomInfo> matchesOnArena = _publicRooms[arenaName];
+                    if (matchesOnArena.Count > MATCHMAKING_STARTING_LIMIT)
                     {
-                        PhotonNetwork.JoinRoom(_mostSuitable.Name);
-                    } 
-                    else 
+                        RoomInfo room = FindMostSuitableRoom(matchesOnArena);
+                        if (room != null)
+                        {
+                            PhotonNetwork.JoinRoom(room.Name);
+                        }
+                        else
+                        {
+                            CreateRoom();
+                        }
+                    }
+                    else
                     {
-                        CreateRoom();
-                    }     
+                        if (matchesOnArena.Count > 0)
+                        {
+                            PhotonNetwork.JoinRoom(matchesOnArena[0].Name);
+                            
+                        }
+                        else
+                        {
+                            CreateRoom();
+                        }
+                    }
                 }
                 else
                 {
-                    foreach (RoomInfo room in  _roomList)
-                    {
-                        if (room.CustomProperties["arenaName"].Equals(arenaName))
-                        {
-                            PhotonNetwork.JoinRoom(room.Name);
-                            return;
-                        }
-                    }
                     CreateRoom();
                 }
             }
         }
 
+
+        private RoomInfo FindMostSuitableRoom(List<RoomInfo> matchesOnArena)
+        {
+            if (matchesOnArena.Count > 0)
+            { 
+                RoomInfo mostSuitable = matchesOnArena[0];
+                Debug.Log(mostSuitable.Name);
+                int suitableLvl = (int) mostSuitable.CustomProperties["level"];
+                double suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
+                for (int i = 1; i < matchesOnArena.Count; i++)
+                {
+                    ExitGames.Client.Photon.Hashtable currProps = matchesOnArena[i].CustomProperties;
+                    int currLvl = (int) currProps["level"];
+                    double currWDRatio = (double) currProps["w/d"];
+                    double currUserWDRatio = _userRepository.CurrentUser.WinsDefeatsRatio();
+                    if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) <
+                        Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
+                    {
+                        mostSuitable = matchesOnArena[i];
+                        suitableLvl = (int) mostSuitable.CustomProperties["level"];
+                        suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
+                    }
+                    else if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) ==
+                             Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
+                    {
+                        if (Math.Abs(currUserWDRatio - currWDRatio) <
+                            Math.Abs(currWDRatio - suitableWDRatio))
+                        {
+                            mostSuitable = matchesOnArena[i];
+                            suitableLvl = (int) mostSuitable.CustomProperties["level"];
+                            suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
+                        }
+                    }
+                }
+                Debug.Log("Ol je kurwa2");
+                Debug.Log("Diff:" + Math.Abs(_userRepository.CurrentUser.Level - suitableLvl).ToString());
+                Debug.Log("Curr user lvl: " + _userRepository.CurrentUser.Level.ToString());
+                Debug.Log("most suitable lvl: " + suitableLvl.ToString());
+                Debug.Log("limit: " + (MAX_LVL_DIFF + 1).ToString());
+                if (Math.Abs(_userRepository.CurrentUser.Level - suitableLvl) < MAX_LVL_DIFF + 1)
+                {
+                    Debug.Log("Ol je kurwa");
+                    return  mostSuitable;
+                }
+                return null;
+            }
+            return null;
+        }
+
+
         public override void OnRoomListUpdate(List<RoomInfo> roomList)
         {
             Debug.Log("eoooo");
             _roomList = roomList;
-            _publicRoomList = new List<RoomInfo>();
-            _privateRoomList = new List<RoomInfo>();
-            RoomInfo mostSuitable = null;
-            if (_roomList.Count > 0)
+            _publicRooms = new Dictionary<string, List<RoomInfo>>();
+            foreach (string arenaName in MainMenu.SCENES)
             {
-                int startingIndex = 0;
-                for (; startingIndex < _roomList.Count; startingIndex++)
-                {
-                    ExitGames.Client.Photon.Hashtable currProps = roomList[startingIndex].CustomProperties;
-                    if (!(bool) currProps["isPrivate"])
-                    {
-                        _publicRoomList.Add(roomList[startingIndex]);
-                        if (currProps["arenaName"].Equals(_arenaName))
-                        {
-                            mostSuitable = roomList[startingIndex];
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        _privateRoomList.Add(roomList[startingIndex]);
-                    }
-                }
-
-                if (mostSuitable != null)
-                {
-                    Debug.Log(mostSuitable.Name);
-                    int suitableLvl = (int) mostSuitable.CustomProperties["level"];
-                    double suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
-                    for (int i = startingIndex + 1; i < roomList.Count; i++)
-                    {
-                        ExitGames.Client.Photon.Hashtable currProps = roomList[i].CustomProperties;
-                        int currLvl = (int) currProps["level"];
-                        double currWDRatio = (double) currProps["w/d"];
-                        double currUserWDRatio = _userRepository.CurrentUser.WinsDefeatsRatio();
-
-                        if (!(bool) currProps["isPrivate"])
-                        {
-                            _publicRoomList.Add(roomList[i]);
-                            if (currProps["arenaName"].Equals(_arenaName))
-                            {
-                                if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) <
-                                    Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
-                                {
-                                    mostSuitable = roomList[i];
-                                    suitableLvl = (int) mostSuitable.CustomProperties["level"];
-                                    suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
-                                }
-                                else if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) ==
-                                         Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
-                                {
-                                    if (Math.Abs(currUserWDRatio - currWDRatio) <
-                                        Math.Abs(currWDRatio - suitableWDRatio))
-                                    {
-                                        mostSuitable = roomList[i];
-                                        suitableLvl = (int) mostSuitable.CustomProperties["level"];
-                                        suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            _privateRoomList.Add(roomList[i]);
-                        }
-                    }
-
-                    Debug.Log("Ol je kurwa2");
-                    Debug.Log("Diff:" + Math.Abs(_userRepository.CurrentUser.Level - suitableLvl).ToString());
-                    Debug.Log("Curr user lvl: " + _userRepository.CurrentUser.Level.ToString());
-                    Debug.Log("most suitable lvl: " + suitableLvl.ToString());
-                    Debug.Log("limit: " + (MAX_LVL_DIFF + 1).ToString());
-                    if (Math.Abs(_userRepository.CurrentUser.Level - suitableLvl) < MAX_LVL_DIFF + 1)
-                    {
-                        Debug.Log("Ol je kurwa");
-                        _mostSuitable = mostSuitable;
-                    }
-                    else
-                    {
-                        _mostSuitable = null;
-                    }
-                }
+                _publicRooms.Add(arenaName + " Online", new List<RoomInfo>());
             }
-            else 
+            _privateRoomList = new List<RoomInfo>();
+            foreach (RoomInfo room in roomList)
             {
-                _mostSuitable = null;
+                ExitGames.Client.Photon.Hashtable currProps = room.CustomProperties;
+                if (!currProps.ContainsKey("isPrivate"))
+                {
+                    continue;
+                }
+                if (!(bool) currProps["isPrivate"])
+                {
+                    _publicRooms[(string) currProps["arenaName"]].Add(room);       
+                }
+                else
+                {
+                    _privateRoomList.Add(room);
+                }
             }
         }
 
@@ -249,35 +243,43 @@ namespace com.MKG.MB_NC
         public void Connect()
         {
             PhotonNetwork.AutomaticallySyncScene = true;
-            Debug.Log("Pun Connected");
             PhotonNetwork.GameVersion = _gameVersion;
             PhotonNetwork.ConnectUsingSettings();
         }
+        
         public override void OnConnectedToMaster()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
             PhotonNetwork.JoinLobby(TypedLobby.Default);
+            _auth.SignIn();
+            _connectButton.gameObject.SetActive(false);
+            _disconnectedMsg.text = "";
         }
-
 
         public override void OnDisconnected(DisconnectCause cause)
         {
-            Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason {0}", cause);
-            IsOnline = false;
+            Debug.Log("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason" + cause);
+            _connectButton.gameObject.SetActive(true);
+            _connectButton.interactable = true;
+            _disconnectedMsg.text = DISCONNECTED_MSG;
 #if UNITY_ANDROID && !UNITY_EDITOR
+            if (_auth.FirebaseAuth.CurrentUser != null)
+            {
+                _auth.SignOut();
+            }
+#else
             _auth.SignOut();
 #endif
         }
-
 
         public void CreateRoom() 
         {
             RoomOptions roomOptions = new RoomOptions();
             roomOptions.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable()
             {
-                {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio() },
-                {"level", _userRepository.CurrentUser.Level },
-                {"arenaName", _arenaName },
+                {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio()},
+                {"level", _userRepository.CurrentUser.Level},
+                {"arenaName", _arenaToLoad},
                 {"isPrivate", false}
             };
             roomOptions.CustomRoomPropertiesForLobby = new string[] {"w/d", "level", "arenaName", "isPrivate"};
@@ -286,7 +288,7 @@ namespace com.MKG.MB_NC
 #if UNITY_ANDROID && !UNITY_EDITOR
             PhotonNetwork.CreateRoom(_auth.CurrentUser.UserId, roomOptions);
 #else
-            PhotonNetwork.CreateRoom(Auth.TEST_PLAYER_NAME, roomOptions);
+            PhotonNetwork.CreateRoom(TEST_PLAYER_NAME, roomOptions);
 #endif
         }
         
@@ -296,15 +298,15 @@ namespace com.MKG.MB_NC
             RoomOptions roomOptions = new RoomOptions();
             roomOptions.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable()
             {
-                {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio() },
-                {"level", _userRepository.CurrentUser.Level },
-                {"arenaName", _arenaName },
+                {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio()},
+                {"level", _userRepository.CurrentUser.Level},
+                {"arenaName", _arenaToLoad},
                 {"isPrivate", true}
             };
             roomOptions.CustomRoomPropertiesForLobby = new string[] {"w/d", "level", "arenaName", "isPrivate"};
             roomOptions.MaxPlayers = _maxPlayersPerRoom;
             Debug.Log("CreateRoom() was called. No room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
-            PhotonNetwork.CreateRoom(roomName + PRIVATE_ROOM_SUFFIX, roomOptions);
+            PhotonNetwork.CreateRoom(roomName, roomOptions);
         }
 
         public override void OnJoinRandomFailed(short returnCode, string message)
@@ -316,16 +318,14 @@ namespace com.MKG.MB_NC
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
             if (PhotonNetwork.CurrentRoom.PlayerCount == 1) {
-                LoadArena(_arenaName);
+                LoadArena(_arenaToLoad);
             } 
             else 
             {
                 PhotonNetwork.CurrentRoom.IsVisible = false;
             } 
         }
-
-
-
+        
         private IEnumerator SetProfileImage()
         {
             UnityWebRequest request = UnityWebRequestTexture.GetTexture(_auth.CurrentUser.PhotoUrl);
@@ -341,6 +341,14 @@ namespace com.MKG.MB_NC
             }
         }
 
+        public static void DisconnectFromPhoton()
+        {
+            if (PhotonNetwork.IsConnected)
+            {
+                PhotonNetwork.Disconnect();
+            }
+        }
+
         public void OnUserDataChange()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -350,6 +358,7 @@ namespace com.MKG.MB_NC
             }
 #else
             _userName.text = _userRepository.CurrentUser.DisplayedName + ", profile updated!";
+            _userImage.gameObject.SetActive(true);
 #endif
         }
 
@@ -361,16 +370,17 @@ namespace com.MKG.MB_NC
 
         public void OnSignIn()
         {
+#if UNITY_ANDROID && !UNITY_EDITOR
             PhotonNetwork.NickName = _auth.CurrentUser.DisplayName;
             _userName.text = _auth.CurrentUser.DisplayName;
             _userRepository.SetCurrentUser(_auth.CurrentUser.UserId, _auth.CurrentUser.DisplayName,
             _auth.CurrentUser.Email, _auth.CurrentUser.PhotoUrl.ToString());
+#else
+            _userName.text = TEST_PLAYER_NAME;
+            _userRepository.SetCurrentUser(TEST_PLAYER_NAME, TEST_PLAYER_NAME, TEST_PLAYER_NAME, null);
+#endif
         }
 
-        public void OnMockSignIn()
-        {
-            _userName.text = Auth.TEST_PLAYER_NAME;
-        }
 
         public void OnSignOut()
         {

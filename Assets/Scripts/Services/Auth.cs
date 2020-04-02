@@ -55,13 +55,13 @@ namespace com.MKG.MB_NC
                 if (task.IsCanceled)
                 {
                     signInCompleted.SetCanceled();
-                    GameManager.DisconnectFromPhoton();
+                    GameManager.Disconnect();
                 }
                 else if (task.IsFaulted)
                 {
                     signInCompleted.SetException(task.Exception);
                     Debug.LogError("An error with GoogleSignIn occured: " + task.Exception);
-                    GameManager.DisconnectFromPhoton();
+                    GameManager.Disconnect();
                 }
                 else
                 {
@@ -73,13 +73,13 @@ namespace com.MKG.MB_NC
                         if (authTask.IsCanceled)
                         {
                             signInCompleted.SetCanceled();
-                            GameManager.DisconnectFromPhoton();
+                            GameManager.Disconnect();
                         }
                         else if (authTask.IsFaulted)
                         {
                             signInCompleted.SetException(authTask.Exception);
                             Debug.LogError("An error with GoogleSignIn occured: " + authTask.Exception);
-                            GameManager.DisconnectFromPhoton();
+                            GameManager.Disconnect();
                         }
                         else
                         {
@@ -96,10 +96,10 @@ namespace com.MKG.MB_NC
 
         public void SignOut()
         {
-            
 #if UNITY_ANDROID && !UNITY_EDITOR
             GoogleSignIn.DefaultInstance.SignOut();
             _firebaseAuth.SignOut();
+            
 #endif
             _authListeners.ForEach(listener => listener.OnSignOut());
         }

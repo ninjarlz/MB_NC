@@ -8,8 +8,7 @@ using TMPro;
 namespace com.MKG.MB_NC
 {
     public abstract class IngameUI : UIModule
-    {
-
+    { 
         public bool WinCameraTarget { get; set; } // true - viking camp, false - anglo-saxons camp
         [SerializeField]
         private GameObject _winStatement;

@@ -11,6 +11,9 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Linq;
+using Photon.Chat;
+using AuthenticationValues = Photon.Realtime.AuthenticationValues;
+using Random = UnityEngine.Random;
 
 namespace com.MKG.MB_NC
 {
@@ -19,35 +22,75 @@ namespace com.MKG.MB_NC
         private const int MATCHMAKING_STARTING_LIMIT = 0;
         private const int MAX_LVL_DIFF = 3;
         public const string PRIVATE_ROOM_SUFFIX = " - private";
-        public const string DISCONNECTED_MSG = "You are disconnected from network services";
-#if !UNITY_ANDROID || UNITY_EDITOR
-        public const string TEST_PLAYER_NAME = "Test Test";
+        private const string DISCONNECTED_MSG = "You are disconnected from network services";
+        private const string CONNECTING_MSG = "Connecting to network services...";
+        private const string NOT_LOGGED_MSG = "User is not logged in";
+        private const string UID_PREFIX = "UID: ";
+        private const string LEVEL_PREFIX = "Level: ";
+        private const string XP_PREFIX = "XP: ";
+        private const string WINS_PREFIX = "Wins: ";
+        private const string LOSES_PREFIX = "Loses: ";
+        private const string RATIO_PREFIX = "W/L: ";
+
+#if UNITY_EDITOR
+        private const string TEST_PLAYER_NAME_EDITOR = "Test Test";
+#elif !UNITY_ANDROID
+        private const string TEST_PLAYER_NAME_BUILD = "Test Test 2";
 #endif
         private static GameManager _instance;
-        public static GameManager Instance { get { return _instance; } }
+
+        public static GameManager Instance
+        {
+            get { return _instance; }
+        }
+
         public static MatchManager CurrentMatch { get; set; }
-        private const string _gameVersion = "1";
-        [SerializeField]
-        private byte _maxPlayersPerRoom = 2;
+        public static string GAME_VERSION = "1";
+        [SerializeField] private byte _maxPlayersPerRoom = 2;
         private FirebaseApp _app;
         private Auth _auth;
         private UserRepository _userRepository;
-        [SerializeField]
-        private Button _connectButton;
-        [SerializeField] 
-        private TextMeshProUGUI _disconnectedMsg;
-        [SerializeField]
-        private TextMeshProUGUI _userName;
-        [SerializeField]
-        private Image _userImage;
+        private SystemUtils _systemUtils;
+        private ChatListener _chatListener;
+        private bool _isUserFullyInitialized = false;
+        private AudioSource _source;
+        public bool IsUserFullyInitialized => _isUserFullyInitialized;
+        [SerializeField] private Button _connectButton;
+        [SerializeField] private TextMeshProUGUI _disconnectedMsg;
+        [SerializeField] private TextMeshProUGUI _userName;
+        [SerializeField] private Image _userImage;
+        [SerializeField] private GameObject _profileDetails;
+        [SerializeField] private Button _profileDetailsButton;
+        [SerializeField] private Button _friendsButton;
+        [SerializeField] private Button _chatButton;
+        [SerializeField] private Button _inviteFriendButton;
+        private List<Button> _acceptInvitationButtons;
+        [SerializeField] private TextMeshProUGUI _uid;
+        [SerializeField] private TextMeshProUGUI _level;
+        [SerializeField] private TextMeshProUGUI _xp;
+        [SerializeField] private TextMeshProUGUI _wins;
+        [SerializeField] private TextMeshProUGUI _loses;
+        [SerializeField] private TextMeshProUGUI _ratio;
         [SerializeField] private GameObject _playerPrefab;
-        public GameObject PlayerPrefab { get => _playerPrefab; }
+        [SerializeField] private Color _clickedColor;
+        public bool IsDetailsOverlayActive { get; set;  }
+        public bool IsFriendsOverlayActive { get; set;  }
+
+        public GameObject PlayerPrefab
+        {
+            get => _playerPrefab;
+        }
+
         private string _arenaToLoad;
         private List<RoomInfo> _roomList;
         private Dictionary<string, List<RoomInfo>> _publicRooms;
         private List<RoomInfo> _privateRoomList;
-        public List<RoomInfo> PrivateRoomList { get => _privateRoomList; }
-        
+
+        public List<RoomInfo> PrivateRoomList
+        {
+            get => _privateRoomList;
+        }
+
         void Awake()
         {
             if (Instance != null)
@@ -70,6 +113,9 @@ namespace com.MKG.MB_NC
             _userRepository = UserRepository.Instance;
             _userRepository.UserListeners.Add(this);
             _auth.AuthListeners.Add(this);
+            _systemUtils = SystemUtils.Instance;
+            _source = GameObject.Find("Click Source").GetComponent<AudioSource>();
+            _chatListener = GetComponent<ChatListener>();
         }
 
         public void OnConnectButton()
@@ -78,10 +124,32 @@ namespace com.MKG.MB_NC
             Connect();
         }
 
+        public void OnDetailsButton()
+        {
+            if (IsDetailsOverlayActive)
+            {
+                _profileDetailsButton.GetComponent<Image>().color = Color.white;
+                IsDetailsOverlayActive = false;
+            }
+            else
+            {
+                IsDetailsOverlayActive = true;
+                _profileDetailsButton.GetComponent<Image>().color = _clickedColor;
+            }
+            _profileDetails.SetActive(IsDetailsOverlayActive);
+            _source.Play();
+        }
+
         public void EstablishConnection()
         {
             Setup();
             Connect();
+        }
+
+        public void CopyUIDToClipboard()
+        {
+            _systemUtils.CopyToSystemClipboard(_userRepository.CurrentUser.UID);
+            _source.Play();
         }
 
         public void HostMatch(string roomName, string arenaName)
@@ -242,18 +310,40 @@ namespace com.MKG.MB_NC
 
         public void Connect()
         {
-            PhotonNetwork.AutomaticallySyncScene = true;
-            PhotonNetwork.GameVersion = _gameVersion;
-            PhotonNetwork.ConnectUsingSettings();
+            _disconnectedMsg.text = CONNECTING_MSG; 
+            _auth.SignIn();
         }
         
         public override void OnConnectedToMaster()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
             PhotonNetwork.JoinLobby(TypedLobby.Default);
-            _auth.SignIn();
+        } 
+        
+        private void OnUserFullyInitialized()
+        {
+            UpdateUserGUI();
             _connectButton.gameObject.SetActive(false);
             _disconnectedMsg.text = "";
+            _userImage.gameObject.SetActive(true); 
+            _profileDetailsButton.GetComponent<Image>().color = Color.white;
+            IsDetailsOverlayActive = false;
+            _profileDetailsButton.gameObject.SetActive(true);
+            ConnectToPhoton();
+        }
+
+        private void UpdateUserGUI()
+        {
+            PhotonNetwork.NickName = _userRepository.CurrentUser.DisplayedName;
+            _userName.text = _userRepository.CurrentUser.DisplayedName;
+            _uid.text = UID_PREFIX + _userRepository.CurrentUser.UID;
+            _level.text = LEVEL_PREFIX + _userRepository.CurrentUser.Level.ToString();
+            _xp.text = XP_PREFIX + _userRepository.CurrentUser.XP.ToString();
+            _wins.text = WINS_PREFIX + _userRepository.CurrentUser.Wins.ToString();
+            _loses.text = LOSES_PREFIX + _userRepository.CurrentUser.Defeats.ToString();
+            double ratio = _userRepository.CurrentUser.WinsDefeatsRatio();
+            _ratio.text =  RATIO_PREFIX + (double.IsPositiveInfinity(ratio) ? "-" : ratio.ToString());
+            _chatListener.UpdateFriends(_userRepository.CurrentUser.Friends.ToArray());
         }
 
         public override void OnDisconnected(DisconnectCause cause)
@@ -261,6 +351,7 @@ namespace com.MKG.MB_NC
             Debug.Log("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason" + cause);
             _connectButton.gameObject.SetActive(true);
             _connectButton.interactable = true;
+            _profileDetailsButton.gameObject.SetActive(false);
             _disconnectedMsg.text = DISCONNECTED_MSG;
 #if UNITY_ANDROID && !UNITY_EDITOR
             if (_auth.FirebaseAuth.CurrentUser != null)
@@ -270,6 +361,7 @@ namespace com.MKG.MB_NC
 #else
             _auth.SignOut();
 #endif
+            _isUserFullyInitialized = false;
         }
 
         public void CreateRoom() 
@@ -284,11 +376,14 @@ namespace com.MKG.MB_NC
             };
             roomOptions.CustomRoomPropertiesForLobby = new string[] {"w/d", "level", "arenaName", "isPrivate"};
             roomOptions.MaxPlayers = _maxPlayersPerRoom;
+            roomOptions.PublishUserId = true;
             Debug.Log("CreateRoom() was called. No room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
 #if UNITY_ANDROID && !UNITY_EDITOR
             PhotonNetwork.CreateRoom(_auth.CurrentUser.UserId, roomOptions);
+#elif UNITY_EDITOR
+            PhotonNetwork.CreateRoom(TEST_PLAYER_NAME_EDITOR, roomOptions);
 #else
-            PhotonNetwork.CreateRoom(TEST_PLAYER_NAME, roomOptions);
+            PhotonNetwork.CreateRoom(TEST_PLAYER_NAME_BUILD, roomOptions);
 #endif
         }
         
@@ -305,6 +400,7 @@ namespace com.MKG.MB_NC
             };
             roomOptions.CustomRoomPropertiesForLobby = new string[] {"w/d", "level", "arenaName", "isPrivate"};
             roomOptions.MaxPlayers = _maxPlayersPerRoom;
+            roomOptions.PublishUserId = true;
             Debug.Log("CreateRoom() was called. No room available, so we create one.\nCalling: PhotonNetwork.CreateRoom");
             PhotonNetwork.CreateRoom(roomName, roomOptions);
         }
@@ -312,6 +408,16 @@ namespace com.MKG.MB_NC
         public override void OnJoinRandomFailed(short returnCode, string message)
         {
             CreateRoom();
+        }
+
+
+        public override void OnJoinedLobby()
+        {
+#if UNITY_EDITOR
+            //_chatListener.Connect(_userRepository.CurrentUser.UID, _userRepository.CurrentUser.Friends.ToArray());
+#else
+            //_chatListener.Connect(_userRepository.CurrentUser.UID, null);
+#endif
         }
 
         public override void OnJoinedRoom()
@@ -331,35 +437,58 @@ namespace com.MKG.MB_NC
             UnityWebRequest request = UnityWebRequestTexture.GetTexture(_auth.CurrentUser.PhotoUrl);
             yield return request.SendWebRequest();
             if (request.isNetworkError || request.isHttpError)
+            {
                 Debug.LogError(request.error);
+                Disconnect();
+            }
             else
             {
-                Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
+                Texture2D texture = ((DownloadHandlerTexture) request.downloadHandler).texture;
                 Sprite image = Sprite.Create(texture, new Rect(Vector2.zero, new Vector2(texture.width, texture.height)), Vector2.zero);
                 _userImage.sprite = image;
-                _userImage.gameObject.SetActive(true);
+                OnUserFullyInitialized();
             }
         }
 
-        public static void DisconnectFromPhoton()
+        public static void Disconnect()
         {
+            _instance._isUserFullyInitialized = false;
             if (PhotonNetwork.IsConnected)
             {
                 PhotonNetwork.Disconnect();
             }
         }
 
+
+        private void ConnectToPhoton()
+        {
+            PhotonNetwork.AutomaticallySyncScene = true;
+            PhotonNetwork.GameVersion = GAME_VERSION;
+            PhotonNetwork.AuthValues = new AuthenticationValues {UserId = _userRepository.CurrentUser.UID};
+            PhotonNetwork.ConnectUsingSettings();
+        }
+
         public void OnUserDataChange()
         {
+            if (!_isUserFullyInitialized) {
 #if UNITY_ANDROID && !UNITY_EDITOR
-            if (!string.IsNullOrEmpty(_userRepository.CurrentUser.PhotoUrl))
-            {
-                StartCoroutine(SetProfileImage());
-            }
+                if (!string.IsNullOrEmpty(_userRepository.CurrentUser.PhotoUrl))
+                {
+                    StartCoroutine(SetProfileImage());
+                }
+                else 
+                {
+                    OnUserFullyInitialized();
+                }
 #else
-            _userName.text = _userRepository.CurrentUser.DisplayedName + ", profile updated!";
-            _userImage.gameObject.SetActive(true);
+                OnUserFullyInitialized();
 #endif
+                _isUserFullyInitialized = true;
+            }
+            else
+            {
+                UpdateUserGUI();
+            }
         }
 
         private void OnDestroy()
@@ -371,21 +500,23 @@ namespace com.MKG.MB_NC
         public void OnSignIn()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-            PhotonNetwork.NickName = _auth.CurrentUser.DisplayName;
-            _userName.text = _auth.CurrentUser.DisplayName;
             _userRepository.SetCurrentUser(_auth.CurrentUser.UserId, _auth.CurrentUser.DisplayName,
             _auth.CurrentUser.Email, _auth.CurrentUser.PhotoUrl.ToString());
+#elif UNITY_EDITOR
+            _userRepository.SetCurrentUser(TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, null);
 #else
-            _userName.text = TEST_PLAYER_NAME;
-            _userRepository.SetCurrentUser(TEST_PLAYER_NAME, TEST_PLAYER_NAME, TEST_PLAYER_NAME, null);
+            _userRepository.SetCurrentUser(TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, null);
 #endif
         }
 
 
         public void OnSignOut()
         {
-            _userName.text = "-";
+            _userName.text = NOT_LOGGED_MSG;
+            _isUserFullyInitialized = false;
+            _profileDetails.SetActive(false);
             _userImage.gameObject.SetActive(false);
+            Disconnect();
         }
     }
 }

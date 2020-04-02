@@ -1,7 +1,10 @@
-﻿namespace com.MKG.MB_NC
+﻿using System.Collections.Generic;
+
+namespace com.MKG.MB_NC
 {
     public class User
     {
+        public string UID;
         public string DisplayedName;
         public string Email;
         public string PhotoUrl;
@@ -9,13 +12,16 @@
         public int XP;
         public int Wins;
         public int Defeats;
+        public List<string> Friends;
+        public List<string> PendingInvitations;
 
         public User()
         {
         }
 
-        public User(string displayedName, string email, string photoUrl)
+        public User(string uid, string displayedName, string email, string photoUrl)
         {
+            UID = uid;
             DisplayedName = displayedName;
             Email = email;
             PhotoUrl = photoUrl;
@@ -25,8 +31,10 @@
             Defeats = 0;
         }
 
-        public User(string displayedName, string email, string photoUrl, int level, int xP, int wins, int defeats)
+        public User(string uid, string displayedName, string email, string photoUrl,
+            int level, int xP, int wins, int defeats, List<string> friends, List<string> pendingInvitations)
         {
+            UID = uid;
             DisplayedName = displayedName;
             Email = email;
             PhotoUrl = photoUrl;
@@ -34,14 +42,16 @@
             XP = xP;
             Wins = wins;
             Defeats = defeats;
+            Friends = friends;
+            PendingInvitations = pendingInvitations;
         }
 
-        public double WinsDefeatsRatio() {
+        public double WinsDefeatsRatio() 
+        {
             if (Defeats == 0) {
                 return double.PositiveInfinity;
-            } else {
-                return ((double) Wins) / Defeats;
-            }
+            } 
+            return ((double) Wins) / Defeats;
         }
     }
 }

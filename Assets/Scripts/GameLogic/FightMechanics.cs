@@ -82,7 +82,7 @@ namespace com.MKG.MB_NC
             else { defendingPower = processedUnit.TPower; Debug.Log("attacked from behind"); }
             processedUnit.MarkerRenderer.sprite = processedUnit.Markers[1];
 
-            List<int> ArmorValues = new List<int> { 0, 0, 0 };
+            List<int> armorValues = new List<int> { 0, 0, 0 };
             foreach (UnitManager unit in processedUnit.AttackingEnemies)
             {
                 if (!heightDiff)
@@ -93,23 +93,23 @@ namespace com.MKG.MB_NC
                         terrainDiff++;
                     }
                 }
-                ArmorValues[unit.Armor - 1]++;
+                armorValues[unit.Armor - 1]++;
                 attackingPower += unit.Power;
                 unit.MarkerRenderer.sprite = unit.Markers[4];
             }
             List<int> armorMax = new List<int> { 0, -1 }; // value, index
             for (int i = 0; i < 3; i++)
             {
-                if (ArmorValues[i] > armorMax[0])
+                if (armorValues[i] > armorMax[0])
                 {
-                    armorMax[0] = ArmorValues[i];
+                    armorMax[0] = armorValues[i];
                     armorMax[1] = i;
                 }
-                else if (ArmorValues[i] == armorMax[0])
+                else if (armorValues[i] == armorMax[0])
                 {
                     if (i > armorMax[1])
                     {
-                        armorMax[0] = ArmorValues[i];
+                        armorMax[0] = armorValues[i];
                         armorMax[1] = i;
                     }
                 }

@@ -100,7 +100,7 @@ namespace com.MKG.MB_NC
         public void OnOnlinePlayButton()
         {
             _source.Play();
-            if (PhotonNetwork.IsConnected)
+            if (GameManager.Instance.IsUserFullyInitialized)
             {
                 if (_currentOnlineScene == 0)
                 {
@@ -114,7 +114,7 @@ namespace com.MKG.MB_NC
         public void OnJoinPlayButton()
         {
             _source.Play();
-            if (PhotonNetwork.IsConnected)
+            if (GameManager.Instance.IsUserFullyInitialized)
             {
                 if (!string.IsNullOrEmpty(_joinInput.text))
                 {
@@ -141,7 +141,7 @@ namespace com.MKG.MB_NC
         public void OnHostPlayButton()
         {
             _source.Play();
-            if (PhotonNetwork.IsConnected)
+            if (GameManager.Instance.IsUserFullyInitialized)
             {
                 if (!string.IsNullOrEmpty(_hostInput.text))
                 {

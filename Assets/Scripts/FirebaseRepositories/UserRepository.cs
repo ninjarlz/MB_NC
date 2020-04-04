@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Firebase.Database;
-using Photon.Pun;
+using Photon.Chat;
 using UnityEngine;
 
 namespace com.MKG.MB_NC
@@ -14,10 +16,15 @@ namespace com.MKG.MB_NC
         public Dictionary<string, User> Users => _users;
         private User _currentUser;
         public User CurrentUser => _currentUser;
+        private Dictionary<string, Tuple<User, int>> _currentFriends;
+        public Dictionary<string, Tuple<User, int>> CurrentFriends => _currentFriends;
         private List<IUserListener> _userListeners = new List<IUserListener>();
         public List<IUserListener> UserListeners => _userListeners;
         private List<IUsersListener> _usersListeners = new List<IUsersListener>();
         public List<IUsersListener> UsersListeners => _usersListeners;
+        private List<IUsersFriendsListener> _usersFriendsListeners = new List<IUsersFriendsListener>();
+        public List<IUsersFriendsListener> UsersFriendsListeners => _usersFriendsListeners;
+        
 
         public static UserRepository Instance
         {
@@ -46,6 +53,7 @@ namespace com.MKG.MB_NC
                     if (_userRef != null) 
                     {
                         _userRef.ValueChanged -= OnUserDataChange;
+                       
                     }
                     DataSnapshot snapshot = dbTask.Result;
                     if (!snapshot.HasChild(userId)) 
@@ -73,12 +81,57 @@ namespace com.MKG.MB_NC
             }
         }
 
-        public void SendInvitationToFriend(string uid)
+        public void SendInvitationToFriend(object sender, ValueChangedEventArgs args)
         {
             
         }
-        
-        
+
+
+        public void UpdateFriendsList()
+        {
+            if (_currentUser != null)
+            {
+                if (_currentFriends == null)
+                {
+                    _currentFriends = new Dictionary<string, Tuple<User, int>>();
+                    foreach (User user in _users.Values)
+                    {
+                        if (_currentUser.Friends.Contains(user.UID))
+                        {
+                            _currentFriends.Add(user.UID,
+                                new Tuple<User, int>(user, ChatUserStatus.Offline));
+                        }
+                    }
+                }
+                else
+                {
+                    Dictionary<string, Tuple<User, int>> currentFriends = new Dictionary<string, Tuple<User, int>>();
+                    foreach (User user in _users.Values)
+                    {
+                        if (_currentUser.Friends.Contains(user.UID))
+                        {
+                            if (_currentFriends.ContainsKey(user.UID))
+                            {
+                                currentFriends.Add(user.UID,
+                                    new Tuple<User, int>(user, _currentFriends[user.UID].Item2));
+                            }
+                            else
+                            {
+                                currentFriends.Add(user.UID,
+                                    new Tuple<User, int>(user, ChatUserStatus.Offline));
+                            }
+                        }
+                    }
+                    _currentFriends = currentFriends;
+                }
+
+                foreach (IUsersFriendsListener usersFriendsListener in _usersFriendsListeners)
+                {
+                    usersFriendsListener.OnUsersFriendsDataChange();
+                }
+            }
+        }
+
 
         private void OnUsersDataChange(object sender, ValueChangedEventArgs args)
         {
@@ -94,11 +147,13 @@ namespace com.MKG.MB_NC
             {
                 _users.Add(children.Key, JsonUtility.FromJson<User>(children.GetRawJsonValue()));
             }
+            UpdateFriendsList();
             foreach (IUsersListener usersListener in _usersListeners)
             {
-                usersListener.OnUsersDataChange(_users);
+                usersListener.OnUsersDataChange();
             }
         }
+
 
         private void OnUserDataChange(object sender, ValueChangedEventArgs args)
         {
@@ -114,6 +169,7 @@ namespace com.MKG.MB_NC
             {
                 userListener.OnUserDataChange();
             }
+            UpdateFriendsList();
         }
     }
 
@@ -124,6 +180,11 @@ namespace com.MKG.MB_NC
 
     public interface IUsersListener
     {
-        void OnUsersDataChange(Dictionary<string,User> users);
+        void OnUsersDataChange();
+    }
+
+    public interface IUsersFriendsListener
+    {
+        void OnUsersFriendsDataChange();
     }
 }

@@ -1,4 +1,5 @@
-﻿using ExitGames.Client.Photon;
+﻿using System;
+using ExitGames.Client.Photon;
 using Photon.Chat;
 using UnityEngine;
 
@@ -9,19 +10,16 @@ namespace com.MKG.MB_NC
         private GameManager _gameManager;
         private string[] _friends;
         private ChatClient _chatClient;
+        private UserRepository _userRepository;
         public ChatClient ChatClient => _chatClient;
         public static string _chatAppId = "2dd7dd28-3447-48a9-ac99-6d11da336e77";
-        [SerializeField]
-        private Transform _friendsListContext;
-        private GameObject _friendObjectPrefab;
 
         private void Start()
         {
             _gameManager = GetComponent<GameManager>();
+            _userRepository = UserRepository.Instance;
             _chatClient = new ChatClient(this);
         }
-
-       
 
         public void Connect(string userId)
         {
@@ -42,7 +40,7 @@ namespace com.MKG.MB_NC
         {
             Debug.Log("Chat connected");
             _chatClient.SetOnlineStatus(ChatUserStatus.Online);
-           
+            UpdateFriends(_userRepository.CurrentUser.Friends.ToArray());
         }
 
         public void UpdateFriends(string[] friends)
@@ -53,10 +51,6 @@ namespace com.MKG.MB_NC
             }
             _friends = friends;
             _chatClient.AddFriends(_friends);
-            foreach (string friend in friends)
-            {
-                
-            }
         }
 
         void Update()
@@ -91,7 +85,9 @@ namespace com.MKG.MB_NC
     
         public void OnStatusUpdate(string user, int status, bool gotMessage, object message)
         {
-            Debug.Log( "Status change for: " + user + " to: " + StatusToString(status));
+            _userRepository.CurrentFriends[user] = 
+                new Tuple<User, int>(_userRepository.CurrentFriends[user].Item1, status);
+            _gameManager.OnUsersFriendsDataChange();
         }
     
         public void OnUserSubscribed(string channel, string user)

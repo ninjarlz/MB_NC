@@ -1,8 +1,6 @@
 ﻿using Firebase.Auth;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using Google;
-using Photon.Pun;
 using UnityEngine;
 
 namespace com.MKG.MB_NC
@@ -15,8 +13,6 @@ namespace com.MKG.MB_NC
         public FirebaseAuth FirebaseAuth => _firebaseAuth;
         public FirebaseUser CurrentUser { get { return _firebaseAuth.CurrentUser; } }
         private static Auth _instance;
-        private List<IAuthListener> _authListeners = new List<IAuthListener>();
-        public List<IAuthListener> AuthListeners { get { return _authListeners; } }
 
         public static Auth Instance
         {
@@ -36,11 +32,9 @@ namespace com.MKG.MB_NC
         {
         }
 
-        public void SignIn()
+        public async Task SignIn()
         {
-#if !UNITY_ANDROID || UNITY_EDITOR
-            _authListeners.ForEach(listener => listener.OnSignIn());
-#else            
+//#if UNITY_ANDROID && !UNITY_EDITOR
             GoogleSignIn.Configuration = new GoogleSignInConfiguration
             {
                 RequestIdToken = true,
@@ -48,66 +42,53 @@ namespace com.MKG.MB_NC
             };
 
             Task<GoogleSignInUser> signIn = GoogleSignIn.DefaultInstance.SignIn();
-
             TaskCompletionSource<FirebaseUser> signInCompleted = new TaskCompletionSource<FirebaseUser>();
-            signIn.ContinueWith(task =>
+            await signIn;
+            if (signIn.IsCanceled)
             {
-                if (task.IsCanceled)
+                signInCompleted.SetCanceled();
+                GameManager.Disconnect();
+            } 
+            else if (signIn.IsFaulted)
+            {
+                signInCompleted.SetException(signIn.Exception);
+                Debug.LogError("An error with GoogleSignIn occured: " + signIn.Exception);
+                GameManager.Disconnect();
+            }
+            else
+            {
+                Credential credential =
+                    GoogleAuthProvider.GetCredential(signIn.Result.IdToken, null);
+                Task<FirebaseUser> authTask = _firebaseAuth.SignInWithCredentialAsync(credential);
+                await authTask;
+                if (authTask.IsCanceled)
                 {
                     signInCompleted.SetCanceled();
                     GameManager.Disconnect();
                 }
-                else if (task.IsFaulted)
+                else if (authTask.IsFaulted)
                 {
-                    signInCompleted.SetException(task.Exception);
-                    Debug.LogError("An error with GoogleSignIn occured: " + task.Exception);
+                    signInCompleted.SetException(authTask.Exception);
+                    Debug.LogError("An error with GoogleSignIn occured: " + authTask.Exception);
                     GameManager.Disconnect();
                 }
                 else
                 {
-
-                    Credential credential =
-                        GoogleAuthProvider.GetCredential(((Task<GoogleSignInUser>) task).Result.IdToken, null);
-                    _firebaseAuth.SignInWithCredentialAsync(credential).ContinueWith(authTask =>
-                    {
-                        if (authTask.IsCanceled)
-                        {
-                            signInCompleted.SetCanceled();
-                            GameManager.Disconnect();
-                        }
-                        else if (authTask.IsFaulted)
-                        {
-                            signInCompleted.SetException(authTask.Exception);
-                            Debug.LogError("An error with GoogleSignIn occured: " + authTask.Exception);
-                            GameManager.Disconnect();
-                        }
-                        else
-                        {
-                            FirebaseUser user = ((Task<FirebaseUser>) authTask).Result;
-                            signInCompleted.SetResult(user);
-                            _authListeners.ForEach(listener => listener.OnSignIn());
-                        }
-                    });
-                }
-            });
-#endif
+                    FirebaseUser user = authTask.Result;
+                    signInCompleted.SetResult(user);
+                }  
+              
+            }
+//#endif
         }
-
 
         public void SignOut()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
             GoogleSignIn.DefaultInstance.SignOut();
             _firebaseAuth.SignOut();
-            
 #endif
-            _authListeners.ForEach(listener => listener.OnSignOut());
-        }
-    }
 
-    public interface IAuthListener
-    {
-        void OnSignIn();
-        void OnSignOut();
+        }
     }
 }

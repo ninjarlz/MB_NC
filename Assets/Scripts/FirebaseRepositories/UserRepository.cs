@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Firebase.Database;
 using Photon.Chat;
 using UnityEngine;
@@ -12,16 +11,13 @@ namespace com.MKG.MB_NC
         private DatabaseReference _usersRef = FirebaseDatabase.DefaultInstance.RootReference.Child("Users");
         private DatabaseReference _userRef;
         private static UserRepository _instance;
-        private Dictionary<string, User> _users;
-        public Dictionary<string, User> Users => _users;
+        private Dictionary<string, DatabaseReference> _friendsReferences;
         private User _currentUser;
         public User CurrentUser => _currentUser;
         private Dictionary<string, Tuple<User, int>> _currentFriends;
         public Dictionary<string, Tuple<User, int>> CurrentFriends => _currentFriends;
         private List<IUserListener> _userListeners = new List<IUserListener>();
         public List<IUserListener> UserListeners => _userListeners;
-        private List<IUsersListener> _usersListeners = new List<IUsersListener>();
-        public List<IUsersListener> UsersListeners => _usersListeners;
         private List<IUsersFriendsListener> _usersFriendsListeners = new List<IUsersFriendsListener>();
         public List<IUsersFriendsListener> UsersFriendsListeners => _usersFriendsListeners;
         
@@ -33,7 +29,6 @@ namespace com.MKG.MB_NC
                 if (_instance == null)
                 {
                     _instance = new UserRepository();
-                    _instance._usersRef.ValueChanged += _instance.OnUsersDataChange;
                 }
                 return _instance;
             }
@@ -52,8 +47,7 @@ namespace com.MKG.MB_NC
                 else if (dbTask.IsCompleted) {
                     if (_userRef != null) 
                     {
-                        _userRef.ValueChanged -= OnUserDataChange;
-                       
+                        _userRef.ValueChanged -= OnCurrentUserDataChange;
                     }
                     DataSnapshot snapshot = dbTask.Result;
                     if (!snapshot.HasChild(userId)) 
@@ -66,7 +60,7 @@ namespace com.MKG.MB_NC
                     {
                         _userRef = _usersRef.Child(userId);
                     }
-                    _userRef.ValueChanged += OnUserDataChange;
+                    _userRef.ValueChanged += OnCurrentUserDataChange;
                 }
             });
         }
@@ -87,75 +81,31 @@ namespace com.MKG.MB_NC
         }
 
 
-        public void UpdateFriendsList()
-        {
-            if (_currentUser != null)
-            {
-                if (_currentFriends == null)
-                {
-                    _currentFriends = new Dictionary<string, Tuple<User, int>>();
-                    foreach (User user in _users.Values)
-                    {
-                        if (_currentUser.Friends.Contains(user.UID))
-                        {
-                            _currentFriends.Add(user.UID,
-                                new Tuple<User, int>(user, ChatUserStatus.Offline));
-                        }
-                    }
-                }
-                else
-                {
-                    Dictionary<string, Tuple<User, int>> currentFriends = new Dictionary<string, Tuple<User, int>>();
-                    foreach (User user in _users.Values)
-                    {
-                        if (_currentUser.Friends.Contains(user.UID))
-                        {
-                            if (_currentFriends.ContainsKey(user.UID))
-                            {
-                                currentFriends.Add(user.UID,
-                                    new Tuple<User, int>(user, _currentFriends[user.UID].Item2));
-                            }
-                            else
-                            {
-                                currentFriends.Add(user.UID,
-                                    new Tuple<User, int>(user, ChatUserStatus.Offline));
-                            }
-                        }
-                    }
-                    _currentFriends = currentFriends;
-                }
-
-                foreach (IUsersFriendsListener usersFriendsListener in _usersFriendsListeners)
-                {
-                    usersFriendsListener.OnUsersFriendsDataChange();
-                }
-            }
-        }
-
-
-        private void OnUsersDataChange(object sender, ValueChangedEventArgs args)
-        {
-            if (args.DatabaseError != null)
+        private void OnFriendDataChange(object sender, ValueChangedEventArgs args)
+        { 
+            if (args.DatabaseError != null) 
             {
                 Debug.LogError(args.DatabaseError.Message);
                 GameManager.Disconnect();
                 return;
             }
-            DataSnapshot snapshot = args.Snapshot;
-            _users = new Dictionary<string, User>();
-            foreach (DataSnapshot children in snapshot.Children)
+            User friend = JsonUtility.FromJson<User>(args.Snapshot.GetRawJsonValue());
+            if (_currentFriends.ContainsKey(friend.UID))
             {
-                _users.Add(children.Key, JsonUtility.FromJson<User>(children.GetRawJsonValue()));
+                _currentFriends[friend.UID] = new Tuple<User, int>(friend, _currentFriends[friend.UID].Item2);
+            } 
+            else 
+            {
+                _currentFriends.Add(friend.UID, new Tuple<User, int>(friend, ChatUserStatus.Offline));
             }
-            UpdateFriendsList();
-            foreach (IUsersListener usersListener in _usersListeners)
+
+            foreach (IUsersFriendsListener friendsListener in _usersFriendsListeners)
             {
-                usersListener.OnUsersDataChange();
+                friendsListener.OnUsersFriendsDataChange();
             }
         }
-
-
-        private void OnUserDataChange(object sender, ValueChangedEventArgs args)
+        
+        private void OnCurrentUserDataChange(object sender, ValueChangedEventArgs args)
         {
             Debug.Log("sync user!");
             if (args.DatabaseError != null) 
@@ -165,11 +115,26 @@ namespace com.MKG.MB_NC
                 return;
             }
             _currentUser = JsonUtility.FromJson<User>(args.Snapshot.GetRawJsonValue());
+            _currentFriends = new Dictionary<string, Tuple<User, int>>();
+            if (_friendsReferences != null)
+            {
+                foreach (DatabaseReference friendRef in _friendsReferences.Values)
+                {
+                    friendRef.ValueChanged -= OnFriendDataChange;
+                }
+            } 
+            _friendsReferences = new Dictionary<string, DatabaseReference>();
+            foreach (string friendId in _currentUser.Friends)
+            {
+                DatabaseReference friendRef = _usersRef.Child(friendId);
+                friendRef.ValueChanged += OnFriendDataChange;
+                _friendsReferences.Add(friendId, friendRef);
+            }
             foreach (IUserListener userListener in _userListeners)
             {
                 userListener.OnUserDataChange();
             }
-            UpdateFriendsList();
+
         }
     }
 

@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace com.MKG.MB_NC
 {
-    public class GameManager : MonoBehaviourPunCallbacks, IUserListener, IUsersFriendsListener, IAuthListener
+    public class GameManager : MonoBehaviourPunCallbacks, IUserListener, IUsersFriendsListener
     {
         private const int MATCHMAKING_STARTING_LIMIT = 0;
         private const int MAX_LVL_DIFF = 3;
@@ -86,7 +86,6 @@ namespace com.MKG.MB_NC
             _userRepository = UserRepository.Instance;
             _userRepository.UserListeners.Add(this);
             _userRepository.UsersFriendsListeners.Add(this);
-            _auth.AuthListeners.Add(this);
             _systemUtils = SystemUtils.Instance;
             _chatListener = GetComponent<ChatListener>();
             _gameManagerUi = GetComponent<GameManagerUI>();
@@ -257,12 +256,13 @@ namespace com.MKG.MB_NC
         }
 
 
-        public void Connect()
+        public async void Connect()
         {
-           _gameManagerUi.OnConnecting();
-            _auth.SignIn();
+            _gameManagerUi.OnConnecting();
+            await _auth.SignIn();
+            OnSignIn();
         }
-        
+
         public override void OnConnectedToMaster()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
@@ -271,7 +271,6 @@ namespace com.MKG.MB_NC
         
         public void OnUserFullyInitialized()
         {
-            _userRepository.UpdateFriendsList();
             _gameManagerUi.UpdateUserGUI();
             _gameManagerUi.ShowConnected();
             ConnectToPhoton();
@@ -292,9 +291,11 @@ namespace com.MKG.MB_NC
             if (_auth.FirebaseAuth.CurrentUser != null)
             {
                 _auth.SignOut();
+                OnSignOut();
             }
 #else
             _auth.SignOut();
+            OnSignOut();
 #endif
             _isUserFullyInitialized = false;
         }
@@ -413,7 +414,6 @@ namespace com.MKG.MB_NC
                 _userRepository.UserListeners.Remove(this);
                 _userRepository.UsersFriendsListeners.Remove(this);
             }
-            _auth.AuthListeners.Remove(this);
         }
 
         public void OnSignIn()
@@ -439,7 +439,7 @@ namespace com.MKG.MB_NC
 
         public void OnUsersFriendsDataChange()
         {
-            _gameManagerUi.OnFriendsDataChange();
+            _gameManagerUi.OnFriendsListDataChange();
             if (_chatListener.ChatClient.State == ChatState.ConnectedToFrontEnd)
             {
                 _chatListener.UpdateFriends(_userRepository.CurrentUser.Friends.ToArray());

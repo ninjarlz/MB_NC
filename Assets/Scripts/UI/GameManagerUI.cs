@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
@@ -23,10 +24,9 @@ namespace com.MKG.MB_NC
         private GameManager _gameManager;
         private SystemUtils _systemUtils;
         private UserRepository _userRepository;
+        private int _friendsListUpdateCounter = 0;
+        private int _oldFriendsCount = 0;
         private Auth _auth;
-
-        private Dictionary<string, Tuple<User, int>> _displayedFriends;
-        
         [SerializeField] private Button _connectButton;
         [SerializeField] private TextMeshProUGUI _disconnectedMsg;
         [SerializeField] private TextMeshProUGUI _userName;
@@ -171,45 +171,63 @@ namespace com.MKG.MB_NC
             _userImage.gameObject.SetActive(false);
         }
 
-        public void OnFriendsDataChange()
+        public void OnFriendsListDataChange()
         {
-            if (_displayedFriends != null)
+            QueuedLock queuedLock = new QueuedLock();
+            try
             {
-                if (_userRepository.CurrentFriends.Count > _displayedFriends.Count)
+                queuedLock.Enter();
+                List<Tuple<User, int>> friendsList = new List<Tuple<User, int>>(_userRepository.CurrentFriends.Values);
+                if (_oldFriendsCount != 0)
                 {
-                    for (int i = _displayedFriends.Count; i < _userRepository.CurrentFriends.Count; i++)
+                    if (friendsList.Count > _oldFriendsCount)
                     {
-                        Instantiate(_friendObjectPrefab, _friendsListContext.position - new Vector3(-130f,45f + 35f * i,0f),
+                        for (int i = _oldFriendsCount; i < friendsList.Count; i++)
+                        {
+                            Instantiate(_friendObjectPrefab,
+                                _friendsListContext.position - new Vector3(-130f, 45f + 35f * i, 0f),
+                                Quaternion.identity, _friendsListContext);
+                        }
+                    }
+                    else if (friendsList.Count < _oldFriendsCount)
+                    {
+                        for (int i = friendsList.Count; i < _oldFriendsCount; i++)
+                        {
+                            DestroyImmediate(_friendsListContext.GetChild(_friendsListContext.childCount - 1).gameObject);
+                            Debug.Log("Destroyed");
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < friendsList.Count; i++)
+                    {
+                        Instantiate(_friendObjectPrefab,
+                            _friendsListContext.position - new Vector3(-130f, 45f + 35f * i, 0f),
                             Quaternion.identity, _friendsListContext);
                     }
                 }
-                else if (_userRepository.CurrentFriends.Count < _displayedFriends.Count)
-                {
-                    for (int i = _userRepository.CurrentFriends.Count; i < _displayedFriends.Count; i++)
-                    {
-                        DestroyImmediate(_friendsListContext.GetChild(i).gameObject);
-                    }
-                }
-            }
-            else
-            {
-                for (int i = 0; i < _userRepository.CurrentFriends.Count; i++)
-                {
-                    Instantiate(_friendObjectPrefab, _friendsListContext.position - new Vector3(-130f,45f + 35f * i,0f),
-                        Quaternion.identity, _friendsListContext);
-                }
-            }
 
-            _displayedFriends = _userRepository.CurrentFriends;
-            List<Tuple<User, int>> displayedFriendsList = new List<Tuple<User, int>>(_displayedFriends.Values);
-            for (int i = 0; i < _friendsListContext.childCount; i++)
-            {
-                TextMeshProUGUI textMeshProUgui =
-                    _friendsListContext.GetChild(i).GetChild(0).GetComponent<TextMeshProUGUI>();
-                textMeshProUgui.text = displayedFriendsList[i].Item1.DisplayedName + " " +
-                                       ChatListener.StatusToString(displayedFriendsList[i].Item2);
+                _oldFriendsCount = friendsList.Count;
+
+                Debug.Log("_______________");
+                foreach (Tuple<User, int> friend in friendsList)
+                {
+                    Debug.Log(friend.Item1.DisplayedName);
+                }
+
+                for (int i = 0; i < friendsList.Count; i++)
+                {
+                    TextMeshProUGUI textMeshProUgui =
+                        _friendsListContext.GetChild(i).GetChild(0).GetComponent<TextMeshProUGUI>();
+                    textMeshProUgui.text = friendsList[i].Item1.DisplayedName + " " +
+                                           ChatListener.StatusToString(friendsList[i].Item2);
+                }        
             }
-            
+            finally
+            {
+                queuedLock.Exit();
+            }
         }
     }
 }

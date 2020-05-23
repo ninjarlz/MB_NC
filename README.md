@@ -3,6 +3,8 @@ Turn based mobile multiplayer game.
 </br>
 <p align="center">
   <img src="https://drive.google.com/uc?export=view&id=1DvvDy9It0AwPD_X_ZKG5AW2kWnGIFhtS"/>
+  <img src="https://drive.google.com/uc?export=view&id=1GGD5Wyh9a-LQeBmvuN164Yp2ScCvjWmu"/>
+  <img src="https://drive.google.com/uc?export=view&id=1a_0K-tXGOFFwf1l05T8wDg4RDCNzDrFK"/>
  </p>
 
 ### Prerequisites

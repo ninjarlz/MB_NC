@@ -2,7 +2,7 @@
 Turn based mobile multiplayer game.
 </br>
 <p align="center">
-  <img src="drive.google.com/open?id=1DvvDy9It0AwPD_X_ZKG5AW2kWnGIFhtS"/>
+  <img with="840" src="https://drive.google.com/uc?export=view&id=1DvvDy9It0AwPD_X_ZKG5AW2kWnGIFhtS"/>
  </p>
  
  

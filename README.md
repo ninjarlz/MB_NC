@@ -7,6 +7,11 @@ Turn based mobile multiplayer game.
   <img width="840" src="drive.google.com/uc?export=view&id=1a_0K-tXGOFFwf1l05T8wDg4RDCNzDrFK"/>
  </p>
 
+
+![stack Overflow](drive.google.com/uc?export=view&id=1DvvDy9It0AwPD_X_ZKG5AW2kWnGIFhtS)
+
+
+
 ### Prerequisites
 In order to properly build application one might need to install [Unity](https://unity3d.com/get-unity/download).
 

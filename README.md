@@ -2,15 +2,10 @@
 Turn based mobile multiplayer game.
 </br>
 <p align="center">
-  <img width="840" src="https://drive.google.com/file/d/1DvvDy9It0AwPD_X_ZKG5AW2kWnGIFhtS/view?usp=sharing"/>
   <img width="840" src="https://drive.google.com/uc?export=view&id=1DvvDy9It0AwPD_X_ZKG5AW2kWnGIFhtS"/>
-  <img width="840" src="drive.google.com/uc?export=view&id=1a_0K-tXGOFFwf1l05T8wDg4RDCNzDrFK"/>
+  <img width="840" src="https://drive.google.com/uc?export=view&id=1GGD5Wyh9a-LQeBmvuN164Yp2ScCvjWmu"/>
+  <img width="840" src="https://drive.google.com/uc?export=view&id=1a_0K-tXGOFFwf1l05T8wDg4RDCNzDrFK"/>
  </p>
-
-
-![stack Overflow](drive.google.com/uc?export=view&id=1DvvDy9It0AwPD_X_ZKG5AW2kWnGIFhtS)
-
-
 
 ### Prerequisites
 In order to properly build application one might need to install [Unity](https://unity3d.com/get-unity/download).

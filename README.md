@@ -3,7 +3,12 @@ Turn based mobile multiplayer game.
 </br>
 <p align="center">
   <img width="840" src="https://drive.google.com/open?id=1DvvDy9It0AwPD_X_ZKG5AW2kWnGIFhtS"/>
-  </p>
+ </p>
+ 
+ 
+
+![screenshot1](https://drive.google.com/open?id=1DvvDy9It0AwPD_X_ZKG5AW2kWnGIFhtS)
+
 
 ### Prerequisites
 In order to properly build application one might need to install [Unity](https://unity3d.com/get-unity/download).

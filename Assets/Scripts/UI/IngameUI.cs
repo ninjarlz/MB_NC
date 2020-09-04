@@ -69,6 +69,7 @@ namespace com.MKG.MB_NC
 
         public void OnNextPhaseButton()
         {
+            
             _source.Play();
             UnitManager tempCurrentlyChecked;
             if (!InGameUIActive && !WinStatementActive)

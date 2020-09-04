@@ -29,24 +29,21 @@ namespace com.MKG.MB_NC
 #endif
         private static GameManager _instance;
 
-        public static GameManager Instance
-        {
-            get { return _instance; }
-        }
+        public static GameManager Instance => _instance;
 
         public static MatchManager CurrentMatch { get; set; }
         public static string GAME_VERSION = "1";
         [SerializeField] private byte _maxPlayersPerRoom = 2;
         private FirebaseApp _app;
         private Auth _auth;
-        private UserRepository _userRepository;
+        private UserService _userService;
         
         private SystemUtils _systemUtils;
         private ChatListener _chatListener;
         private GameManagerUI _gameManagerUi;
         
-        private bool _isUserFullyInitialized = false;
-        public bool IsUserFullyInitialized => _isUserFullyInitialized;
+         private bool _isUserFullyInitialized = false;
+         public bool IsUserFullyInitialized => _isUserFullyInitialized;
         
         [SerializeField] private GameObject _playerPrefab;
         public GameObject PlayerPrefab
@@ -83,9 +80,9 @@ namespace com.MKG.MB_NC
             _app = FirebaseApp.DefaultInstance;
             _auth = Auth.Instance;
             _app.SetEditorDatabaseUrl("https://mb-nc-a2dd3.firebaseio.com/");
-            _userRepository = UserRepository.Instance;
-            _userRepository.UserListeners.Add(this);
-            _userRepository.UsersFriendsListeners.Add(this);
+            _userService = UserService.Instance;
+            _userService.UserListeners.Add(this);
+            _userService.UsersFriendsListeners.Add(this);
             _auth.AuthListeners.Add(this);
             _systemUtils = SystemUtils.Instance;
             _chatListener = GetComponent<ChatListener>();
@@ -172,16 +169,16 @@ namespace com.MKG.MB_NC
                     ExitGames.Client.Photon.Hashtable currProps = matchesOnArena[i].CustomProperties;
                     int currLvl = (int) currProps["level"];
                     double currWDRatio = (double) currProps["w/d"];
-                    double currUserWDRatio = _userRepository.CurrentUser.WinsDefeatsRatio();
-                    if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) <
-                        Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
+                    double currUserWDRatio = _userService.CurrentUser.WinsDefeatsRatio();
+                    if (Math.Abs(_userService.CurrentUser.Level - currLvl) <
+                        Math.Abs(_userService.CurrentUser.Level - suitableLvl))
                     {
                         mostSuitable = matchesOnArena[i];
                         suitableLvl = (int) mostSuitable.CustomProperties["level"];
                         suitableWDRatio = (double) mostSuitable.CustomProperties["w/d"];
                     }
-                    else if (Math.Abs(_userRepository.CurrentUser.Level - currLvl) ==
-                             Math.Abs(_userRepository.CurrentUser.Level - suitableLvl))
+                    else if (Math.Abs(_userService.CurrentUser.Level - currLvl) ==
+                             Math.Abs(_userService.CurrentUser.Level - suitableLvl))
                     {
                         if (Math.Abs(currUserWDRatio - currWDRatio) <
                             Math.Abs(currWDRatio - suitableWDRatio))
@@ -193,11 +190,11 @@ namespace com.MKG.MB_NC
                     }
                 }
                 Debug.Log("Ol je kurwa2");
-                Debug.Log("Diff:" + Math.Abs(_userRepository.CurrentUser.Level - suitableLvl).ToString());
-                Debug.Log("Curr user lvl: " + _userRepository.CurrentUser.Level.ToString());
+                Debug.Log("Diff:" + Math.Abs(_userService.CurrentUser.Level - suitableLvl).ToString());
+                Debug.Log("Curr user lvl: " + _userService.CurrentUser.Level.ToString());
                 Debug.Log("most suitable lvl: " + suitableLvl.ToString());
                 Debug.Log("limit: " + (MAX_LVL_DIFF + 1).ToString());
-                if (Math.Abs(_userRepository.CurrentUser.Level - suitableLvl) < MAX_LVL_DIFF + 1)
+                if (Math.Abs(_userService.CurrentUser.Level - suitableLvl) < MAX_LVL_DIFF + 1)
                 {
                     Debug.Log("Ol je kurwa");
                     return  mostSuitable;
@@ -259,29 +256,22 @@ namespace com.MKG.MB_NC
 
         public void Connect()
         {
-           _gameManagerUi.OnConnecting();
+            _gameManagerUi.OnConnecting();
             _auth.SignIn();
         }
         
         public override void OnConnectedToMaster()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
+            _chatListener.Connect(_userService.CurrentUser.UID);
             PhotonNetwork.JoinLobby(TypedLobby.Default);
-        } 
-        
-        public void OnUserFullyInitialized()
-        {
-            _userRepository.UpdateFriendsList();
-            _gameManagerUi.UpdateUserGUI();
-            _gameManagerUi.ShowConnected();
-            ConnectToPhoton();
         }
 
         private void UpdateUserData()
         {
-            PhotonNetwork.NickName = _userRepository.CurrentUser.DisplayedName;
+            PhotonNetwork.NickName = _userService.CurrentUser.DisplayedName;
             _gameManagerUi.UpdateUserGUI();
-            _chatListener.UpdateFriends(_userRepository.CurrentUser.Friends.ToArray());
+            _chatListener.UpdateFriends(_userService.CurrentUser.Friends.ToArray());
         }
 
         public override void OnDisconnected(DisconnectCause cause)
@@ -292,11 +282,12 @@ namespace com.MKG.MB_NC
             if (_auth.FirebaseAuth.CurrentUser != null)
             {
                 _auth.SignOut();
+                _userService.SignOut();
             }
 #else
             _auth.SignOut();
+            _userService.SignOut();
 #endif
-            _isUserFullyInitialized = false;
         }
 
         public void CreateRoom() 
@@ -304,8 +295,8 @@ namespace com.MKG.MB_NC
             RoomOptions roomOptions = new RoomOptions();
             roomOptions.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable()
             {
-                {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio()},
-                {"level", _userRepository.CurrentUser.Level},
+                {"w/d", _userService.CurrentUser.WinsDefeatsRatio()},
+                {"level", _userService.CurrentUser.Level},
                 {"arenaName", _arenaToLoad},
                 {"isPrivate", false}
             };
@@ -328,8 +319,8 @@ namespace com.MKG.MB_NC
             RoomOptions roomOptions = new RoomOptions();
             roomOptions.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable()
             {
-                {"w/d", _userRepository.CurrentUser.WinsDefeatsRatio()},
-                {"level", _userRepository.CurrentUser.Level},
+                {"w/d", _userService.CurrentUser.WinsDefeatsRatio()},
+                {"level", _userService.CurrentUser.Level},
                 {"arenaName", _arenaToLoad},
                 {"isPrivate", true}
             };
@@ -348,7 +339,7 @@ namespace com.MKG.MB_NC
 
         public override void OnJoinedLobby()
         {
-            _chatListener.Connect(_userRepository.CurrentUser.UID);
+            
         }
 
         public override void OnJoinedRoom()
@@ -367,10 +358,10 @@ namespace com.MKG.MB_NC
 
         public static void Disconnect()
         {
-            _instance._isUserFullyInitialized = false;
             if (PhotonNetwork.IsConnected)
             {
-                PhotonNetwork.Disconnect();
+               PhotonNetwork.Disconnect();
+               _instance._isUserFullyInitialized = false;
             }
         }
 
@@ -379,71 +370,61 @@ namespace com.MKG.MB_NC
         {
             PhotonNetwork.AutomaticallySyncScene = true;
             PhotonNetwork.GameVersion = GAME_VERSION;
-            PhotonNetwork.AuthValues = new AuthenticationValues {UserId = _userRepository.CurrentUser.UID};
+            PhotonNetwork.AuthValues = new AuthenticationValues {UserId = _userService.CurrentUser.UID};
             PhotonNetwork.ConnectUsingSettings();
         }
 
         public void OnUserDataChange()
         {
-            if (!_isUserFullyInitialized) {
-#if UNITY_ANDROID && !UNITY_EDITOR
-                if (!string.IsNullOrEmpty(_userRepository.CurrentUser.PhotoUrl))
-                {
-                    StartCoroutine(_gameManagerUi.SetProfileImage());
-                }
-                else 
-                {
-                    OnUserFullyInitialized();
-                }
-#else
-                OnUserFullyInitialized();
-#endif
-                _isUserFullyInitialized = true;
-            }
-            else
-            {
-                UpdateUserData();
-            }
+            UpdateUserData();
+        }
+
+        public void OnUserInitialized()
+        {
+            _gameManagerUi.UpdateUserGUI();
+            _gameManagerUi.ShowConnected();
+            ConnectToPhoton();
+            _isUserFullyInitialized = true;
         }
 
         private void OnDestroy()
         {
-            if (_userRepository != null)
+            if (_userService != null)
             {
-                _userRepository.UserListeners.Remove(this);
-                _userRepository.UsersFriendsListeners.Remove(this);
+                _userService.UserListeners.Remove(this);
+                _userService.UsersFriendsListeners.Remove(this);
             }
-            _auth.AuthListeners.Remove(this);
+            _auth?.AuthListeners.Remove(this);
         }
 
         public void OnSignIn()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-            _userRepository.SetCurrentUser(_auth.CurrentUser.UserId, _auth.CurrentUser.DisplayName,
+            _userService.SetCurrentUser(_auth.CurrentUser.UserId, _auth.CurrentUser.DisplayName,
             _auth.CurrentUser.Email, _auth.CurrentUser.PhotoUrl.ToString());
 #elif UNITY_EDITOR
-            _userRepository.SetCurrentUser(TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, null);
+            _userService.SetCurrentUser(TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, null);
 #else
-            _userRepository.SetCurrentUser(TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, null);
+            _userService.SetCurrentUser(TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, null);
 #endif
         }
 
 
         public void OnSignOut()
         {
-            _isUserFullyInitialized = false;
             _gameManagerUi.OnSignOut();
             Disconnect();
+            _isUserFullyInitialized = false;
         }
 
 
-        public void OnUsersFriendsDataChange()
+        public void OnUsersFriendDataChange(string uid)
         {
-            _gameManagerUi.OnFriendsDataChange();
-            if (_chatListener.ChatClient.State == ChatState.ConnectedToFrontEnd)
+            _gameManagerUi.OnFriendDataChange(uid);
+            /*if (_chatListener.ChatClient.State == ChatState.ConnectedToFrontEnd)
             {
-                _chatListener.UpdateFriends(_userRepository.CurrentUser.Friends.ToArray());
-            }
+                _chatListener.UpdateFriends(_userService.CurrentUser.Friends.ToArray());
+            }*/
         }
     }
 }

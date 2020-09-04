@@ -19,6 +19,12 @@ namespace com.MKG.MB_NC
             base.OnBackButton();
             UICamera.SetActive(false);
         }
+        
+        public override void OnQuitGameButton()
+        {
+            base.OnQuitGameButton();
+            GameManager.Instance.LeaveRoom();
+        }
     }    
 }
 

@@ -10,14 +10,14 @@ namespace com.MKG.MB_NC
         private GameManager _gameManager;
         private string[] _friends;
         private ChatClient _chatClient;
-        private UserRepository _userRepository;
+        private UserService _userService;
         public ChatClient ChatClient => _chatClient;
         public static string _chatAppId = "2dd7dd28-3447-48a9-ac99-6d11da336e77";
 
         private void Start()
         {
             _gameManager = GetComponent<GameManager>();
-            _userRepository = UserRepository.Instance;
+            _userService = UserService.Instance;
             _chatClient = new ChatClient(this);
         }
 
@@ -40,7 +40,7 @@ namespace com.MKG.MB_NC
         {
             Debug.Log("Chat connected");
             _chatClient.SetOnlineStatus(ChatUserStatus.Online);
-            UpdateFriends(_userRepository.CurrentUser.Friends.ToArray());
+            UpdateFriends(_userService.CurrentUser.Friends.ToArray());
         }
 
         public void UpdateFriends(string[] friends)
@@ -52,6 +52,11 @@ namespace com.MKG.MB_NC
             _friends = friends;
             _chatClient.AddFriends(_friends);
         }
+
+        //public void UpdateFriend(string uid)
+        //{
+        //    _chatClient.RemoveFriends(new []{uid});
+        //}
 
         void Update()
         {
@@ -85,9 +90,9 @@ namespace com.MKG.MB_NC
     
         public void OnStatusUpdate(string user, int status, bool gotMessage, object message)
         {
-            _userRepository.CurrentFriends[user] = 
-                new Tuple<User, int>(_userRepository.CurrentFriends[user].Item1, status);
-            _gameManager.OnUsersFriendsDataChange();
+            _userService.CurrentFriends[user] = 
+                new Tuple<User, int>(_userService.CurrentFriends[user].Item1, status);
+            _gameManager.OnUsersFriendDataChange(user);
         }
     
         public void OnUserSubscribed(string channel, string user)

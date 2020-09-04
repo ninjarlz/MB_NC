@@ -22,7 +22,7 @@ namespace com.MKG.MB_NC
 
         private GameManager _gameManager;
         private SystemUtils _systemUtils;
-        private UserRepository _userRepository;
+        private UserService _userService;
         private Auth _auth;
 
         private Dictionary<string, Tuple<User, int>> _displayedFriends;
@@ -57,7 +57,7 @@ namespace com.MKG.MB_NC
         {
             _gameManager = GameManager.Instance;
             _auth = Auth.Instance;
-            _userRepository = UserRepository.Instance;
+            _userService = UserService.Instance;
             _systemUtils = SystemUtils.Instance;
             _source = GameObject.Find("Click Source").GetComponent<AudioSource>();
         }
@@ -102,7 +102,7 @@ namespace com.MKG.MB_NC
         
         public void CopyUIDToClipboard()
         {
-            _systemUtils.CopyToSystemClipboard(_userRepository.CurrentUser.UID);
+            _systemUtils.CopyToSystemClipboard(_userService.CurrentUser.UID);
             _source.Play();
         }
 
@@ -113,13 +113,13 @@ namespace com.MKG.MB_NC
 
         public void UpdateUserGUI()
         {
-            _userName.text = _userRepository.CurrentUser.DisplayedName;
-            _uid.text = UID_PREFIX + _userRepository.CurrentUser.UID;
-            _level.text = LEVEL_PREFIX + _userRepository.CurrentUser.Level.ToString();
-            _xp.text = XP_PREFIX + _userRepository.CurrentUser.XP.ToString();
-            _wins.text = WINS_PREFIX + _userRepository.CurrentUser.Wins.ToString();
-            _loses.text = LOSES_PREFIX + _userRepository.CurrentUser.Defeats.ToString();
-            double ratio = _userRepository.CurrentUser.WinsDefeatsRatio();
+            _userName.text = _userService.CurrentUser.DisplayedName;
+            _uid.text = UID_PREFIX + _userService.CurrentUser.UID;
+            _level.text = LEVEL_PREFIX + _userService.CurrentUser.Level.ToString();
+            _xp.text = XP_PREFIX + _userService.CurrentUser.XP.ToString();
+            _wins.text = WINS_PREFIX + _userService.CurrentUser.Wins.ToString();
+            _loses.text = LOSES_PREFIX + _userService.CurrentUser.Defeats.ToString();
+            double ratio = _userService.CurrentUser.WinsDefeatsRatio();
             _ratio.text =  RATIO_PREFIX + (double.IsPositiveInfinity(ratio) ? "-" : ratio.ToString());
         }
 
@@ -159,7 +159,7 @@ namespace com.MKG.MB_NC
                 Texture2D texture = ((DownloadHandlerTexture) request.downloadHandler).texture;
                 Sprite image = Sprite.Create(texture, new Rect(Vector2.zero, new Vector2(texture.width, texture.height)), Vector2.zero);
                 _userImage.sprite = image;
-                _gameManager.OnUserFullyInitialized();
+                //_gameManager.OnUserInitialized();
             }
         }
 
@@ -171,45 +171,22 @@ namespace com.MKG.MB_NC
             _userImage.gameObject.SetActive(false);
         }
 
-        public void OnFriendsDataChange()
+        public void OnFriendDataChange(string uid)
         {
-            if (_displayedFriends != null)
+            Tuple<User, int> userTuple= _userService.CurrentFriends[uid];
+            Transform friendElement = _friendsListContext.Find(uid);
+            if (friendElement == null)
             {
-                if (_userRepository.CurrentFriends.Count > _displayedFriends.Count)
-                {
-                    for (int i = _displayedFriends.Count; i < _userRepository.CurrentFriends.Count; i++)
-                    {
-                        Instantiate(_friendObjectPrefab, _friendsListContext.position - new Vector3(-130f,45f + 35f * i,0f),
-                            Quaternion.identity, _friendsListContext);
-                    }
-                }
-                else if (_userRepository.CurrentFriends.Count < _displayedFriends.Count)
-                {
-                    for (int i = _userRepository.CurrentFriends.Count; i < _displayedFriends.Count; i++)
-                    {
-                        DestroyImmediate(_friendsListContext.GetChild(i).gameObject);
-                    }
-                }
+                friendElement = Instantiate(_friendObjectPrefab,
+                    _friendsListContext.position -
+                    new Vector3(-130f, 45f + 35f * _friendsListContext.childCount, 0f),
+                    Quaternion.identity, _friendsListContext).transform;
+                friendElement.name = uid;
             }
-            else
-            {
-                for (int i = 0; i < _userRepository.CurrentFriends.Count; i++)
-                {
-                    Instantiate(_friendObjectPrefab, _friendsListContext.position - new Vector3(-130f,45f + 35f * i,0f),
-                        Quaternion.identity, _friendsListContext);
-                }
-            }
-
-            _displayedFriends = _userRepository.CurrentFriends;
-            List<Tuple<User, int>> displayedFriendsList = new List<Tuple<User, int>>(_displayedFriends.Values);
-            for (int i = 0; i < _friendsListContext.childCount; i++)
-            {
-                TextMeshProUGUI textMeshProUgui =
-                    _friendsListContext.GetChild(i).GetChild(0).GetComponent<TextMeshProUGUI>();
-                textMeshProUgui.text = displayedFriendsList[i].Item1.DisplayedName + " " +
-                                       ChatListener.StatusToString(displayedFriendsList[i].Item2);
-            }
-            
+            TextMeshProUGUI textMeshProUgui =
+                friendElement.GetChild(0).GetComponent<TextMeshProUGUI>();
+            textMeshProUgui.text = userTuple.Item1.DisplayedName + " " +
+                                   ChatListener.StatusToString(userTuple.Item2);
         }
     }
 }

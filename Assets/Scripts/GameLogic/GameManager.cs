@@ -11,13 +11,14 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Photon.Chat;
 using AuthenticationValues = Photon.Realtime.AuthenticationValues;
 using Random = UnityEngine.Random;
 
 namespace com.MKG.MB_NC
 {
-    public class GameManager : MonoBehaviourPunCallbacks, IUserListener, IUsersFriendsListener, IAuthListener
+    public class GameManager : MonoBehaviourPunCallbacks, IUserListener, IUsersFriendsListener
     {
         private const int MATCHMAKING_STARTING_LIMIT = 0;
         private const int MAX_LVL_DIFF = 3;
@@ -83,7 +84,6 @@ namespace com.MKG.MB_NC
             _userService = UserService.Instance;
             _userService.UserListeners.Add(this);
             _userService.UsersFriendsListeners.Add(this);
-            _auth.AuthListeners.Add(this);
             _systemUtils = SystemUtils.Instance;
             _chatListener = GetComponent<ChatListener>();
             _gameManagerUi = GetComponent<GameManagerUI>();
@@ -91,10 +91,18 @@ namespace com.MKG.MB_NC
 
 
 
-        public void EstablishConnection()
+        public async Task EstablishConnection()
         {
             Setup();
-            Connect();
+            await Connect();
+#if UNITY_ANDROID && !UNITY_EDITOR
+            await _userService.SetCurrentUser(_auth.CurrentUser.UserId, _auth.CurrentUser.DisplayName,
+            _auth.CurrentUser.Email, _auth.CurrentUser.PhotoUrl.ToString());
+#elif UNITY_EDITOR
+            await _userService.SetCurrentUser(TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, null);
+#else
+            await _userService.SetCurrentUser(TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, null);
+#endif
         }
 
 
@@ -254,10 +262,10 @@ namespace com.MKG.MB_NC
         }
 
 
-        public void Connect()
+        public async Task Connect()
         {
             _gameManagerUi.OnConnecting();
-            _auth.SignIn();
+            await _auth.SignIn();
         }
         
         public override void OnConnectedToMaster()
@@ -394,21 +402,7 @@ namespace com.MKG.MB_NC
                 _userService.UserListeners.Remove(this);
                 _userService.UsersFriendsListeners.Remove(this);
             }
-            _auth?.AuthListeners.Remove(this);
         }
-
-        public void OnSignIn()
-        {
-#if UNITY_ANDROID && !UNITY_EDITOR
-            _userService.SetCurrentUser(_auth.CurrentUser.UserId, _auth.CurrentUser.DisplayName,
-            _auth.CurrentUser.Email, _auth.CurrentUser.PhotoUrl.ToString());
-#elif UNITY_EDITOR
-            _userService.SetCurrentUser(TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, TEST_PLAYER_NAME_EDITOR, null);
-#else
-            _userService.SetCurrentUser(TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, TEST_PLAYER_NAME_BUILD, null);
-#endif
-        }
-
 
         public void OnSignOut()
         {
